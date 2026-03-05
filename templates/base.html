@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{% block title %}Resume Analyzer{% endblock %}</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,900;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #f0ece4;
+  --ink-dim: #aca8a2;
+  --ink-faint: #5a5850;
+  --bg: #0d0b08;
+  --surface: #161410;
+  --surface2: #1c1a16;
+  --rule: #2e2c26;
+  --gold: #c9a84c;
+  --gold-dim: rgba(201,168,76,0.12);
+  --mono: 'DM Mono', monospace;
+  --serif: 'Fraunces', serif;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 40px;
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 40px;
+  text-decoration: none;
+  border-right: 1px solid var(--rule);
+  padding-right: 32px;
+}
+
+.nav-logo-mark {
+  width: 22px;
+  height: 22px;
+  background: var(--gold);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  flex-shrink: 0;
+  position: relative;
+}
+
+.nav-logo-mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--surface);
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+}
+
+.nav-logo-text {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.nav-logo-text em {
+  font-style: normal;
+  color: var(--gold);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.nav-link:hover {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+  background: var(--gold-dim);
+}
+
+.nav-link.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-left: 1px solid var(--rule);
+  padding-left: 28px;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-user-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.nav-username {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+.nav-logout {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 8px 18px;
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+
+.nav-logout:hover {
+  color: #fff;
+  border-color: #c0392b;
+  background: rgba(192,57,43,0.15);
+}
+
+.nav-login {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #0d0b08;
+  background: var(--gold);
+  text-decoration: none;
+  padding: 9px 20px;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  transition: background 0.15s;
+}
+
+.nav-login:hover { background: #d4b560; }
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px 60px;
+  width: 100%;
+  flex: 1;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 32px;
+  margin-bottom: 24px;
+}
+
+h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; color: var(--ink); }
+h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--ink-dim); }
+
+.auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 85vh; }
+.auth-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 48px; width: 100%; max-width: 460px; }
+.auth-card h2 { text-align: center; margin-bottom: 32px; }
+.form-field { position: relative; margin-bottom: 28px; }
+.form-field input { width: 100%; padding: 16px 14px; border-radius: 3px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font-size: .95rem; outline: none; transition: .2s ease; }
+.form-field input:focus { border-color: var(--gold); }
+.form-field label { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); background: var(--surface); padding: 0 6px; color: var(--ink-dim); font-size: .9rem; pointer-events: none; transition: .2s ease; }
+.form-field input:focus + label, .form-field input:not(:placeholder-shown) + label { top: -10px; font-size: .75rem; color: var(--gold); }
+.auth-card button { width: 100%; padding: 14px; border: none; background: var(--gold); color: #0d0b08; font-weight: 600; font-size: .95rem; cursor: pointer; border-radius: 2px; transition: .2s; }
+.auth-card button:hover { background: #d4b560; }
+.error-box { background: rgba(192,57,43,0.08); border: 1px solid rgba(192,57,43,0.3); padding: 14px; border-radius: 3px; color: #e74c3c; font-size: .85rem; margin-bottom: 20px; }
+.auth-msg { text-align: center; font-size: .95rem; color: var(--ink-dim); line-height: 1.6; }
+.auth-link { margin-top: 28px; text-align: center; font-size: .85rem; }
+.auth-link a { color: var(--gold); text-decoration: none; }
+.auth-link a:hover { text-decoration: underline; }
+
+.badge { display: inline-block; padding: 4px 10px; border-radius: 2px; font-size: .72rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.badge-green { background: rgba(39,174,96,0.12); color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
+
+input[type=file], textarea { width: 100%; background: var(--surface2); border: 1px solid var(--rule); border-radius: 3px; padding: 12px; color: var(--ink); font-size: .95rem; outline: none; }
+textarea { resize: vertical; }
+button { cursor: pointer; }
+</style>
+
+{% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"></div>
+    <span class="nav-logo-text">RESUME<em>IQ</em></span>
+  </a>
+
+  <div class="nav-links">
+    <a href="/" class="nav-link">Analyze</a>
+    <a href="/history/" class="nav-link">History</a>
+  </div>
+
+  <div class="nav-right">
+    {% if user.is_authenticated %}
+      <div class="nav-user">
+        <div class="nav-user-dot"></div>
+        <span class="nav-username">Welcome, {{ user.username }}</span>
+      </div>
+      <a href="{% url 'logout' %}" class="nav-logout">Logout →</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-login">Login →</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+<script>
+{% block scripts %}{% endblock %}
+</script>
+
+</body>
+</html>

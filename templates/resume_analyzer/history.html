@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #e8e4dc;
+  --ink-dim: #8a8680;
+  --ink-faint: #3a3830;
+  --paper: #0e0d0b;
+  --paper-raise: #161410;
+  --paper-card: #1a1916;
+  --rule: #2a2825;
+  --accent: #c9a84c;
+  --accent-dim: rgba(201,168,76,0.15);
+  --mono: 'DM Mono', monospace;
+  --serif: 'Fraunces', serif;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+/* ── HEADER ── */
+.h-header {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.h-header h1 {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 2.6rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.h-header h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+}
+
+.h-header-right {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: right;
+}
+
+/* ── TABLE WRAPPER ── */
+.h-table-wrap {
+  background: var(--paper-card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ── TABLE ── */
+.h-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.h-table thead tr {
+  background: var(--paper-raise);
+  border-bottom: 1px solid var(--rule);
+}
+
+.h-table th {
+  padding: 14px 20px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.h-table tbody tr {
+  border-bottom: 1px solid var(--rule);
+  transition: background 0.15s;
+}
+
+.h-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.h-table tbody tr:hover {
+  background: var(--paper-raise);
+}
+
+.h-table td {
+  padding: 16px 20px;
+  font-size: 0.875rem;
+  color: var(--ink-dim);
+  vertical-align: middle;
+}
+
+/* ── ID CELL ── */
+.td-id {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+/* ── SCORE CELL ── */
+.score-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-num {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  min-width: 48px;
+}
+
+.score-bar-wrap {
+  width: 80px;
+  height: 3px;
+  background: var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.score-bar-fill.low  { background: #c0392b; }
+.score-bar-fill.mid  { background: #c9a84c; }
+.score-bar-fill.high { background: #27ae60; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 2px;
+}
+
+.status-completed {
+  background: rgba(39,174,96,0.12);
+  color: #27ae60;
+  border: 1px solid rgba(39,174,96,0.25);
+}
+
+.status-processing {
+  background: rgba(201,168,76,0.12);
+  color: #c9a84c;
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+.status-failed {
+  background: rgba(192,57,43,0.12);
+  color: #c0392b;
+  border: 1px solid rgba(192,57,43,0.25);
+}
+
+.status-pending {
+  background: rgba(138,134,128,0.12);
+  color: var(--ink-dim);
+  border: 1px solid var(--rule);
+}
+
+/* ── DATE CELL ── */
+.td-date {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+}
+
+/* ── ROLE CELL ── */
+.td-role {
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── VIEW LINK ── */
+.view-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+
+.view-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ── EMPTY STATE ── */
+.h-empty {
+  text-align: center;
+  padding: 80px 24px;
+  background: var(--paper-card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.h-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  opacity: 0.4;
+}
+
+.h-empty p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.1rem;
+  color: var(--ink-dim);
+  margin-bottom: 28px;
+}
+
+.btn-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 12px 24px;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  background: var(--accent-dim);
+  transition: all 0.2s;
+}
+
+.btn-start:hover {
+  background: rgba(201,168,76,0.25);
+}
+
+/* ── FOOTER ── */
+.h-footer {
+  text-align: center;
+  padding: 36px 0 60px;
+  border-top: 1px solid var(--rule);
+  margin-top: 40px;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  text-decoration: none;
+  padding: 12px 24px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.btn-back:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="h-header">
+  <div>
+    <h1>Analysis <em>History</em></h1>
+  </div>
+  <div class="h-header-right">
+    {{ analyses|length }} record{% if analyses|length != 1 %}s{% endif %}
+  </div>
+</div>
+
+{% if analyses %}
+
+<div class="h-table-wrap">
+  <table class="h-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>ATS Score</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in analyses %}
+      <tr>
+
+        <!-- ID -->
+        <td><span class="td-id">{{ a.pk }}</span></td>
+
+        <!-- SCORE -->
+        <td>
+          <div class="score-cell">
+            <span class="score-num">
+              {% if a.ats_score %}{{ a.ats_score|floatformat:0 }}{% else %}—{% endif %}
+            </span>
+            {% if a.ats_score %}
+              <div class="score-bar-wrap">
+                <div class="score-bar-fill
+                  {% if a.ats_score >= 75 %}high
+                  {% elif a.ats_score >= 50 %}mid
+                  {% else %}low{% endif %}"
+                  style="width:{{ a.ats_score|floatformat:0 }}%">
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </td>
+
+        <!-- ROLE -->
+        <td><span class="td-role">{{ a.detected_role|default:"—" }}</span></td>
+
+        <!-- STATUS -->
+        <td>
+          <span class="status-badge status-{{ a.status }}">{{ a.status }}</span>
+        </td>
+
+        <!-- DATE -->
+        <td><span class="td-date">{{ a.created_at|date:"d M Y" }}</span></td>
+
+        <!-- VIEW -->
+        <td>
+          <a href="/result/{{ a.pk }}/" class="view-link">View →</a>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+
+<div class="h-empty">
+  <div class="h-empty-icon">📋</div>
+  <p>No analyses yet. Start by uploading your resume.</p>
+  <a href="/" class="btn-start">← Analyze a Resume</a>
+</div>
+
+{% endif %}
+
+<div class="h-footer">
+  <a href="/" class="btn-back">← Back to Analyzer</a>
+</div>
+
+{% endblock %}

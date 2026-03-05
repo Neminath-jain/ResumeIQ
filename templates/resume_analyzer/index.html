@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% block title %}Resume Analyzer{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,900;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #f0ece4;
+  --ink-dim: #b0ac a6;
+  --ink-dim: #aca8a2;
+  --ink-faint: #5a5850;
+  --bg: #0d0b08;
+  --surface: #161410;
+  --surface2: #1c1a16;
+  --rule: #2e2c26;
+  --gold: #c9a84c;
+  --gold-dim: rgba(201,168,76,0.12);
+  --mono: 'DM Mono', monospace;
+  --serif: 'Fraunces', serif;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
+
+/* ── PAGE HEADER ── */
+.idx-header {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 40px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.idx-header h1 {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 3rem;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.idx-header h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--gold);
+}
+
+.idx-header-sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-align: right;
+}
+
+/* ── GRID ── */
+.idx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 720px) { .idx-grid { grid-template-columns: 1fr; } }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface2);
+}
+
+.panel-head-icon {
+  font-size: 1rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,0.2);
+  flex-shrink: 0;
+}
+
+.panel-head-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.panel-head-step {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+
+.panel-head-title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.panel-body { padding: 28px; }
+
+/* ── FIELD LABEL ── */
+.field-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-dim);
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* ── FILE DROP ── */
+.file-drop {
+  position: relative;
+  border: 1px dashed rgba(201,168,76,0.25);
+  border-radius: 3px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(201,168,76,0.03);
+}
+
+.file-drop:hover {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+}
+
+.file-drop input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.file-drop-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.file-drop-text {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.file-drop-sub {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.file-name {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--gold);
+  margin-top: 10px;
+  display: none;
+}
+
+/* ── DIVIDER ── */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.or-divider span {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* ── TEXTAREA ── */
+.idx-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 16px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  min-height: 160px;
+  transition: border-color 0.2s;
+}
+
+.idx-textarea:focus { border-color: var(--gold); }
+
+.idx-textarea::placeholder {
+  color: var(--ink-faint);
+  font-size: 0.95rem;
+}
+
+/* ── SUBMIT PANEL ── */
+.submit-panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--gold);
+  border-radius: 3px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.submit-info h3 {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 1.4rem;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.submit-info p {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+}
+
+.btn-analyze {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #0d0b08;
+  background: var(--gold);
+  border: none;
+  padding: 16px 36px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.btn-analyze:hover { background: #d4b560; transform: translateY(-1px); }
+.btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── LOADING ── */
+.loading-bar {
+  display: none;
+  margin-top: 14px;
+  height: 2px;
+  background: var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 200px;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: var(--gold);
+  animation: loadpulse 1.4s ease-in-out infinite;
+  width: 40%;
+}
+
+@keyframes loadpulse {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.loading-text {
+  display: none;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+
+/* ── ERROR ── */
+.err-box {
+  display: none;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: rgba(192,57,43,0.08);
+  border-left: 2px solid #c0392b;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: #e74c3c;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<form style="display:none;">{% csrf_token %}</form>
+
+<!-- HEADER -->
+<div class="idx-header">
+  <div>
+    <h1>Resume <em>Analyzer</em></h1>
+  </div>
+  <div class="idx-header-sub">ATS Compatibility Tool</div>
+</div>
+
+<!-- TWO PANEL GRID -->
+<div class="idx-grid">
+
+  <!-- RESUME PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-head-icon">📄</div>
+      <div class="panel-head-meta">
+        <span class="panel-head-step">Step 01</span>
+        <span class="panel-head-title">Your Resume</span>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <span class="field-label">Upload PDF</span>
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="resumeFile" accept=".pdf" onchange="handleFile(this)">
+        <div class="file-drop-icon">📎</div>
+        <div class="file-drop-text">Drop PDF here or click to browse</div>
+        <div class="file-drop-sub">PDF files only · Max 10MB</div>
+        <div class="file-name" id="fileName"></div>
+      </div>
+
+      <div class="or-divider"><span>or paste text</span></div>
+
+      <span class="field-label">Resume Text</span>
+      <textarea
+        class="idx-textarea"
+        id="resumeText"
+        placeholder="Paste your resume content here..."></textarea>
+
+    </div>
+  </div>
+
+  <!-- JD PANEL -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-head-icon">💼</div>
+      <div class="panel-head-meta">
+        <span class="panel-head-step">Step 02</span>
+        <span class="panel-head-title">Job Description</span>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <span class="field-label">Paste Job Description *</span>
+      <textarea
+        class="idx-textarea"
+        id="jdText"
+        style="min-height:380px"
+        placeholder="Paste the full job description here..."></textarea>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- SUBMIT PANEL -->
+<div class="submit-panel">
+  <div class="submit-info">
+    <h3>Ready to analyze?</h3>
+    <p>AI-powered ATS scoring · Career intelligence · Skill gap analysis</p>
+  </div>
+  <div>
+    <button class="btn-analyze" id="analyzeBtn" onclick="analyzeResume()">
+      Run Analysis →
+    </button>
+    <div class="loading-bar" id="loadingBar">
+      <div class="loading-bar-fill"></div>
+    </div>
+    <div class="loading-text" id="loadingText">Analyzing your resume...</div>
+    <div class="err-box" id="errBox"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+function handleFile(input) {
+  const name = document.getElementById('fileName');
+  if (input.files.length) {
+    name.textContent = '✓ ' + input.files[0].name;
+    name.style.display = 'block';
+    document.getElementById('resumeText').value = '';
+  }
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+async function analyzeResume() {
+  const btn = document.getElementById('analyzeBtn');
+  const loadingBar = document.getElementById('loadingBar');
+  const loadingText = document.getElementById('loadingText');
+  const errBox = document.getElementById('errBox');
+
+  const jd = document.getElementById('jdText').value.trim();
+  const rt = document.getElementById('resumeText').value.trim();
+  const fi = document.getElementById('resumeFile');
+
+  errBox.style.display = 'none';
+
+  if (!jd) { showErr('Please paste a job description.'); return; }
+  if (!rt && !fi.files.length) { showErr('Please upload a PDF or paste resume text.'); return; }
+
+  btn.disabled = true;
+  loadingBar.style.display = 'block';
+  loadingText.style.display = 'block';
+
+  try {
+    const fd = new FormData();
+    fd.append('job_description', jd);
+    if (fi.files.length) fd.append('resume_file', fi.files[0]);
+    else fd.append('resume_text', rt);
+
+    const resp = await fetch('/api/analyze/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken') },
+      body: fd,
+      credentials: 'same-origin'
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Analysis failed');
+    window.location.href = data.result_url;
+
+  } catch(e) {
+    showErr(e.message);
+    btn.disabled = false;
+    loadingBar.style.display = 'none';
+    loadingText.style.display = 'none';
+  }
+}
+
+function showErr(msg) {
+  const b = document.getElementById('errBox');
+  b.textContent = 'Error: ' + msg;
+  b.style.display = 'block';
+}
+{% endblock %}
