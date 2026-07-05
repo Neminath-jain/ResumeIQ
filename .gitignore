@@ -1,22 +1,8 @@
-# Python
+.env
+myenv/
+db.sqlite3
 __pycache__/
 *.pyc
-
-# Virtual environment
-myenv/
-venv/
-
-# Environment variables
-.env
-
-# Database
-db.sqlite3
-
-# Media uploads
-media/
-
-# VS Code
-.vscode/
-
-# Logs
+*.pyo
+*.pyd
 *.log
