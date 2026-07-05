@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --ink: #e8e4dc;
-  --ink-dim: #8a8680;
-  --ink-faint: #3a3830;
-  --paper: #0e0d0b;
-  --paper-raise: #161410;
-  --paper-card: #1a1916;
-  --rule: #2a2825;
-  --accent: #c9a84c;
-  --accent-dim: rgba(201,168,76,0.15);
-  --red: #c0392b;
-  --green: #27ae60;
-  --blue: #2980b9;
-  --mono: 'DM Mono', monospace;
-  --serif: 'Fraunces', serif;
-  --sans: 'DM Sans', sans-serif;
+  --ink: #222222;
+  --ink-dim: #717171;
+  --ink-faint: #B0B0B0;
+  --paper: #FFFFFF;
+  --paper-raise: #F7F7F7;
+  --paper-card: #FFFFFF;
+  --rule: #DDDDDD;
+  --accent: #FF385C;
+  --accent-dim: rgba(255,56,92,0.15);
+  --red: #C13515;
+  --green: #008A05;
+  --blue: #2B6CB0;
+  --mono: 'Inter', sans-serif;
+  --serif: 'Inter', sans-serif;
+  --sans: 'Inter', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,8 +54,8 @@ body {
 }
 
 .rp-header-left h1 em {
-  font-style: italic;
-  font-weight: 300;
+  font-style: normal;
+  font-weight: 800;
   color: var(--accent);
 }
 
@@ -75,7 +77,7 @@ body {
   background: var(--paper-card);
   border: 1px solid var(--rule);
   border-left: 3px solid var(--accent);
-  border-radius: 4px;
+  border-radius: 12px;
   padding: 32px;
   margin-bottom: 24px;
 }
@@ -139,7 +141,7 @@ body {
 .score-meta h2 {
   font-family: var(--serif);
   font-size: 1.5rem;
-  font-weight: 300;
+  font-weight: 500;
   color: var(--ink);
   margin-bottom: 8px;
 }
@@ -151,13 +153,13 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   padding: 4px 12px;
-  border-radius: 2px;
+  border-radius: 8px;
   margin-bottom: 20px;
 }
 
-.verdict-strong   { background: rgba(39,174,96,0.15);  color: #27ae60; border: 1px solid rgba(39,174,96,0.3); }
-.verdict-moderate { background: rgba(201,168,76,0.15); color: #c9a84c; border: 1px solid rgba(201,168,76,0.3); }
-.verdict-weak     { background: rgba(192,57,43,0.15);  color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
+.verdict-strong   { background: rgba(0,138,5,0.15);  color: #008A05; border: 1px solid rgba(0,138,5,0.3); }
+.verdict-moderate { background: rgba(255,56,92,0.15); color: #FF385C; border: 1px solid rgba(255,56,92,0.3); }
+.verdict-weak     { background: rgba(193,53,21,0.15);  color: #C13515; border: 1px solid rgba(193,53,21,0.3); }
 
 /* ── BREAKDOWN BARS ── */
 .breakdown {
@@ -197,14 +199,14 @@ body {
 .bk-bar {
   height: 3px;
   background: var(--rule);
-  border-radius: 2px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .bk-fill {
   height: 100%;
   background: var(--accent);
-  border-radius: 2px;
+  border-radius: 8px;
   transition: width 1s ease;
 }
 
@@ -224,7 +226,7 @@ body {
 .sec {
   background: var(--paper-card);
   border: 1px solid var(--rule);
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -244,7 +246,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 12px;
   background: var(--accent-dim);
 }
 
@@ -280,7 +282,7 @@ body {
 .chip {
   background: var(--paper-raise);
   border: 1px solid var(--rule);
-  border-radius: 3px;
+  border-radius: 12px;
   padding: 8px 14px;
 }
 
@@ -312,16 +314,16 @@ body {
   gap: 10px;
   padding: 10px 12px;
   background: var(--paper-raise);
-  border-radius: 3px;
+  border-radius: 12px;
   border-left: 2px solid transparent;
   font-size: 0.875rem;
   color: var(--ink-dim);
   line-height: 1.5;
 }
 
-.skill-item.critical { border-left-color: #c0392b; }
-.skill-item.advanced  { border-left-color: #c9a84c; }
-.skill-item.weakness  { border-left-color: #2980b9; }
+.skill-item.critical { border-left-color: #C13515; }
+.skill-item.advanced  { border-left-color: #FF385C; }
+.skill-item.weakness  { border-left-color: #2B6CB0; }
 
 .skill-dot {
   width: 6px;
@@ -331,9 +333,9 @@ body {
   flex-shrink: 0;
 }
 
-.critical .skill-dot { background: #c0392b; }
-.advanced  .skill-dot { background: #c9a84c; }
-.weakness  .skill-dot { background: #2980b9; }
+.critical .skill-dot { background: #C13515; }
+.advanced  .skill-dot { background: #FF385C; }
+.weakness  .skill-dot { background: #2B6CB0; }
 
 .empty-note {
   font-family: var(--mono);
@@ -342,7 +344,7 @@ body {
   padding: 12px;
   text-align: center;
   border: 1px dashed var(--rule);
-  border-radius: 3px;
+  border-radius: 12px;
 }
 
 /* ── ROADMAP ── */
@@ -379,8 +381,8 @@ body {
 /* ── ADVICE ── */
 .advice-text {
   font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
+  font-style: normal;
+  font-weight: 400;
   font-size: 1.05rem;
   line-height: 1.8;
   color: var(--ink-dim);
@@ -408,7 +410,7 @@ body {
   text-decoration: none;
   padding: 12px 24px;
   border: 1px solid var(--rule);
-  border-radius: 3px;
+  border-radius: 12px;
   transition: all 0.2s;
 }
 
@@ -627,11 +629,36 @@ body {
   <a href="/" class="btn-back">← Analyze Another Resume</a>
 </div>
 
+<!-- Context data for the AI chat widget (read via json_script, never inline-escaped by hand) -->
+{{ analysis.ats_score|json_script:"ctx-ats-score" }}
+{{ analysis.detected_role|default:""|json_script:"ctx-role" }}
+{{ analysis.experience_level|default:""|json_script:"ctx-exp" }}
+{{ analysis.critical_skill_gaps|json_script:"ctx-critical" }}
+{{ analysis.advanced_skill_gaps|json_script:"ctx-advanced" }}
+{{ analysis.resume_weaknesses|json_script:"ctx-weak" }}
+
 {% endwith %}
 
 {% endblock %}
 
 {% block scripts %}
+// Expose this analysis to the AI chat widget so it can give personalized answers
+(function () {
+  function readJSON(id, fallback) {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    try { return JSON.parse(el.textContent); } catch (e) { return fallback; }
+  }
+  window.RESUME_CONTEXT = {
+    ats_score: readJSON('ctx-ats-score', null),
+    detected_role: readJSON('ctx-role', '') || '',
+    experience_level: readJSON('ctx-exp', '') || '',
+    critical_skill_gaps: readJSON('ctx-critical', []) || [],
+    advanced_skill_gaps: readJSON('ctx-advanced', []) || [],
+    resume_weaknesses: readJSON('ctx-weak', []) || []
+  };
+})();
+
 // Animate score dial
 document.addEventListener('DOMContentLoaded', function() {
   const fill = document.getElementById('scoreFill');
