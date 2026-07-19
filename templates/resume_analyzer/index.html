@@ -4,215 +4,436 @@
 {% block extra_head %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --ink: #222222;
-    --ink-dim: #717171;
-  --ink-faint: #B0B0B0;
-  --bg: #FFFFFF;
+  --ink: #1F1B16;
+  --ink-dim: #6B6459;
+  --ink-faint: #A8A096;
+  --bg: #F5F4ED;
   --surface: #FFFFFF;
-  --surface2: #F7F7F7;
-  --rule: #DDDDDD;
-  --gold: #FF385C;
-  --gold-dim: rgba(255,56,92,0.12);
+  --surface2: #EDEBE0;
+  --rule: #E1DED2;
+  --clay: #D97757;
+  --clay-dark: #BF5B3E;
+  --clay-dim: rgba(217,119,87,0.12);
   --mono: 'Inter', sans-serif;
-  --serif: 'Inter', sans-serif;
+  --serif: 'Source Serif 4', Georgia, serif;
   --sans: 'Inter', sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); perspective: 1400px; }
 
-/* ── PAGE HEADER ── */
-.idx-header {
-  padding: 48px 0 36px;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 40px;
+/* ══════════════ FULLSCREEN 3D HERO ══════════════ */
+.hero-full {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  margin-left: -50vw;
+  min-height: calc(100vh - 64px);
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  overflow: hidden;
+  border-bottom: 1px solid var(--rule);
 }
 
-.idx-header h1 {
-  font-family: var(--serif);
-  font-weight: 800;
-  font-size: 3rem;
-  color: var(--ink);
-  letter-spacing: -0.03em;
-  line-height: 1;
+.hero-inner {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 24px;
+  z-index: 2;
 }
 
-.idx-header h1 em {
-  font-style: normal;
-  font-weight: 800;
-  color: var(--gold);
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.idx-header-sub {
+.fade-up          { opacity: 0; animation: fade-up 0.8s ease-out forwards; }
+.fade-up-delay-1  { opacity: 0; animation: fade-up 0.8s ease-out forwards; animation-delay: 0.2s; }
+.fade-up-delay-2  { opacity: 0; animation: fade-up 0.8s ease-out forwards; animation-delay: 0.4s; }
+.fade-up-delay-3  { opacity: 0; animation: fade-up 0.8s ease-out forwards; animation-delay: 0.6s; }
+.fade-up-delay-4  { opacity: 0; animation: fade-up 0.8s ease-out forwards; animation-delay: 0.8s; }
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--mono);
   font-size: 0.72rem;
-  color: var(--ink-dim);
-  text-transform: uppercase;
+  font-weight: 600;
   letter-spacing: 0.14em;
-  text-align: right;
+  text-transform: uppercase;
+  color: var(--clay-dark);
+  background: var(--clay-dim);
+  border: 1px solid rgba(217,119,87,0.25);
+  padding: 7px 16px;
+  border-radius: 999px;
+  margin-bottom: 30px;
+}
+
+.hero-eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--clay);
+}
+
+.hero-h1 {
+  position: relative;
+  z-index: 3;
+  font-family: var(--serif);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow:
+    0 0 24px var(--bg),
+    0 0 48px var(--bg),
+    0 0 80px var(--bg);
+}
+
+.hero-h1 span { display: block; font-size: clamp(2.6rem, 7vw, 5.4rem); }
+.hero-h1 em { font-style: italic; font-weight: 600; color: var(--clay); }
+
+.hero-sub {
+  position: relative;
+  z-index: 3;
+  margin-top: 26px;
+  max-width: 540px;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--ink-dim);
+  text-shadow: 0 0 20px var(--bg), 0 0 40px var(--bg);
+}
+
+.hero-sub b { color: var(--ink); font-weight: 700; }
+
+.hero-ctas {
+  margin-top: 36px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(155deg, #E08A64 0%, var(--clay) 40%, var(--clay-dark) 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 16px 32px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 2px 4px rgba(191,91,62,0.3),
+    0 10px 22px -6px rgba(191,91,62,0.55);
+}
+
+.hero-cta-primary:hover {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    0 4px 10px rgba(191,91,62,0.35),
+    0 16px 30px -8px rgba(191,91,62,0.6);
+}
+
+.hero-cta-ghost {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.hero-cta-ghost:hover { color: var(--ink); }
+
+.hero-stats {
+  margin-top: 52px;
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.hero-stat .n {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hero-stat .l {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.hero-scroll-cue {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding-bottom: 26px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ─── the 3D cube, hero's ambient background centerpiece ─── */
+.orb-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cube-scene {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  transform: translate(-50%, -50%);
+  perspective: 1200px;
+}
+
+.cube-ghost-wrap {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  filter: blur(22px);
+  transform: scale(0.82);
+  animation: cubeGhostIn 1.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes cubeGhostIn {
+  0%   { opacity: 0;   filter: blur(22px); transform: scale(0.8); }
+  60%  { opacity: 0.4;  filter: blur(3px); transform: scale(1.03); }
+  100% { opacity: 0.32; filter: blur(0);   transform: scale(1); }
+}
+
+.cube-spin {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cubeSpin 18s linear infinite;
+}
+
+@keyframes cubeSpin {
+  from { transform: rotateX(-16deg) rotateY(0deg); }
+  to   { transform: rotateX(-16deg) rotateY(360deg); }
+}
+
+.cube-face {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0%, transparent 45%),
+    linear-gradient(155deg, #F3A57E 0%, var(--clay) 55%, var(--clay-dark) 100%);
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: inset 0 0 60px rgba(90,30,10,0.25);
+}
+
+.face-front  { transform: translateZ(210px); }
+.face-back   { transform: rotateY(180deg) translateZ(210px); }
+.face-right  { transform: rotateY(90deg) translateZ(210px); }
+.face-left   { transform: rotateY(-90deg) translateZ(210px); }
+.face-top    { transform: rotateX(90deg) translateZ(210px); opacity: 0.85; }
+.face-bottom { transform: rotateX(-90deg) translateZ(210px); opacity: 0.7; }
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* ellipse (not circle) scales independently on x/y to match the wide,
+     short hero container — a circle sizes to the farthest corner and
+     fades out before reaching the bottom edge, leaving a visible round
+     "halo" boundary right around the stats row */
+  background: radial-gradient(ellipse 90% 85% at 50% 42%, rgba(245,244,237,0.5) 0%, rgba(245,244,237,0.88) 60%, var(--bg) 100%);
+}
+
+@media (max-width: 720px) {
+  .cube-scene { width: 300px; height: 300px; }
+  .cube-face { width: 300px; height: 300px; }
+  .face-front, .face-back, .face-right, .face-left, .face-top, .face-bottom { transform-origin: center; }
+  .hero-stats { gap: 32px; }
+}
+
+/* ══════════════ ANALYZER SECTION ══════════════ */
+.section-pad { padding-top: 64px; }
+
+.section-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clay-dark);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 36px;
+  letter-spacing: -0.01em;
 }
 
 /* ── GRID ── */
 .idx-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 28px;
+  margin-bottom: 28px;
 }
 
 @media (max-width: 720px) { .idx-grid { grid-template-columns: 1fr; } }
 
-/* ── PANEL ── */
+/* ── 3D TILT PANEL ── */
 .panel {
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 18px;
   overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  box-shadow:
+    0 1px 2px rgba(31,27,22,0.04),
+    0 8px 20px rgba(31,27,22,0.06);
+  will-change: transform;
+}
+
+.panel:hover {
+  box-shadow:
+    0 4px 8px rgba(31,27,22,0.06),
+    0 24px 48px -12px rgba(31,27,22,0.16);
 }
 
 .panel-head {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px 24px;
+  padding: 20px 26px;
   border-bottom: 1px solid var(--rule);
   background: var(--surface2);
+  transform: translateZ(20px);
 }
 
 .panel-head-icon {
   font-size: 1rem;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: var(--gold-dim);
-  border: 1px solid rgba(255,56,92,0.2);
+  background: var(--clay-dim);
+  border: 1px solid rgba(217,119,87,0.25);
   flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(191,91,62,0.15);
 }
 
-.panel-head-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+.panel-head-meta { display: flex; flex-direction: column; gap: 3px; }
 
 .panel-head-step {
   font-family: var(--mono);
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--gold);
+  color: var(--clay);
+  font-weight: 600;
 }
 
 .panel-head-title {
   font-family: var(--serif);
-  font-size: 1.2rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.01em;
 }
 
-.panel-body { padding: 28px; }
+.panel-body { padding: 28px; transform: translateZ(10px); }
 
 /* ── FIELD LABEL ── */
 .field-label {
   font-family: var(--mono);
   font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--ink-dim);
   margin-bottom: 10px;
   display: block;
+  font-weight: 600;
 }
 
 /* ── FILE DROP ── */
 .file-drop {
   position: relative;
-  border: 1px dashed rgba(255,56,92,0.25);
-  border-radius: 12px;
+  border: 1.5px dashed rgba(217,119,87,0.35);
+  border-radius: 14px;
   padding: 36px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background: rgba(255,56,92,0.03);
+  background: rgba(217,119,87,0.04);
 }
 
 .file-drop:hover {
-  border-color: var(--gold);
-  background: var(--gold-dim);
+  border-color: var(--clay);
+  background: var(--clay-dim);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(191,91,62,0.12);
 }
 
 .file-drop input[type=file] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
 }
 
-.file-drop-icon {
-  font-size: 2rem;
-  margin-bottom: 12px;
-  opacity: 0.6;
-}
+.file-drop-icon { font-size: 2rem; margin-bottom: 12px; opacity: 0.7; }
 
 .file-drop-text {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 6px;
+  font-family: var(--mono); font-size: 0.75rem; color: var(--ink-dim);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; font-weight: 600;
 }
 
-.file-drop-sub {
-  font-size: 0.8rem;
-  color: var(--ink-faint);
-}
+.file-drop-sub { font-size: 0.8rem; color: var(--ink-faint); }
 
 .file-name {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  color: var(--gold);
-  margin-top: 10px;
-  display: none;
+  font-family: var(--mono); font-size: 0.75rem; color: var(--clay-dark);
+  margin-top: 10px; display: none; font-weight: 600;
 }
 
 /* ── DIVIDER ── */
-.or-divider {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 24px 0;
-}
-
-.or-divider::before,
-.or-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--rule);
-}
-
+.or-divider { display: flex; align-items: center; gap: 14px; margin: 24px 0; }
+.or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
 .or-divider span {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--ink-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
+  font-family: var(--mono); font-size: 0.65rem; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
 }
 
 /* ── TEXTAREA ── */
@@ -229,35 +450,47 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
   outline: none;
   resize: vertical;
   min-height: 160px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.idx-textarea:focus { border-color: var(--gold); }
+.idx-textarea:focus { border-color: var(--clay); box-shadow: 0 0 0 3px var(--clay-dim); }
+.idx-textarea::placeholder { color: var(--ink-faint); font-size: 0.95rem; }
 
-.idx-textarea::placeholder {
-  color: var(--ink-faint);
-  font-size: 0.95rem;
-}
-
-/* ── SUBMIT PANEL ── */
+/* ── SUBMIT PANEL (elevated 3D card) ── */
 .submit-panel {
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-left: 3px solid var(--gold);
-  border-radius: 12px;
-  padding: 28px 32px;
+  border-radius: 18px;
+  padding: 30px 34px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 40px;
+  margin-bottom: 64px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  box-shadow:
+    0 1px 2px rgba(31,27,22,0.04),
+    0 10px 24px rgba(31,27,22,0.08);
 }
+
+.submit-panel::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(var(--clay), var(--clay-dark));
+}
+
+.submit-info { padding-left: 14px; transform: translateZ(16px); }
 
 .submit-info h3 {
   font-family: var(--serif);
-  font-weight: 800;
-  font-size: 1.4rem;
+  font-weight: 700;
+  font-size: 1.45rem;
   color: var(--ink);
   margin-bottom: 6px;
   letter-spacing: -0.01em;
@@ -268,7 +501,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
   font-size: 0.68rem;
   color: var(--ink-dim);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   line-height: 1.7;
 }
 
@@ -277,65 +510,137 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
   align-items: center;
   gap: 10px;
   font-family: var(--sans);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   letter-spacing: 0.01em;
   color: #FFFFFF;
-  background: linear-gradient(to right, #FF385C, #BD1E59);
+  background: linear-gradient(155deg, #E08A64 0%, var(--clay) 40%, var(--clay-dark) 100%);
   border: none;
-  padding: 15px 32px;
+  padding: 16px 34px;
   cursor: pointer;
   font-weight: 700;
   border-radius: 999px;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+  transform: translateZ(24px);
+  transition: all 0.15s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 2px 4px rgba(191,91,62,0.3),
+    0 10px 22px -6px rgba(191,91,62,0.55);
 }
 
-.btn-analyze:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.22); }
-.btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-analyze:hover {
+  filter: brightness(1.04);
+  transform: translateZ(28px) translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    0 4px 10px rgba(191,91,62,0.35),
+    0 16px 30px -8px rgba(191,91,62,0.6);
+}
+
+.btn-analyze:active { transform: translateZ(18px) translateY(0); }
+.btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── LOADING ── */
 .loading-bar {
-  display: none;
-  margin-top: 14px;
-  height: 2px;
-  background: var(--rule);
-  border-radius: 8px;
-  overflow: hidden;
-  width: 200px;
+  display: none; margin-top: 14px; height: 3px; background: var(--rule);
+  border-radius: 8px; overflow: hidden; width: 200px;
 }
-
-.loading-bar-fill {
-  height: 100%;
-  background: var(--gold);
-  animation: loadpulse 1.4s ease-in-out infinite;
-  width: 40%;
-}
-
-@keyframes loadpulse {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
-}
+.loading-bar-fill { height: 100%; background: var(--clay); animation: loadpulse 1.4s ease-in-out infinite; width: 40%; border-radius: 8px; }
+@keyframes loadpulse { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 
 .loading-text {
-  display: none;
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 8px;
+  display: none; font-family: var(--mono); font-size: 0.65rem; color: var(--ink-dim);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-top: 8px;
 }
 
 /* ── ERROR ── */
 .err-box {
-  display: none;
-  margin-top: 14px;
-  padding: 12px 16px;
-  background: rgba(193,53,21,0.08);
-  border-left: 2px solid #C13515;
+  display: none; margin-top: 14px; padding: 12px 16px;
+  background: rgba(193,53,21,0.08); border-left: 2px solid #C13515;
+  font-family: var(--mono); font-size: 0.7rem; color: #C13515; border-radius: 6px;
+}
+
+/* ══════════════ QUOTE / PARALLAX SECTION ══════════════ */
+/* NOTE: this block was missing in the original file — the HTML/JS referenced
+   .quote-section, .glow-top, .glow-shape, .glow-1/.glow-2, .quote-inner,
+   .quote-text and .quote-attr but none of them were defined, so the section
+   rendered as unstyled black-on-transparent text with no glow effect. */
+.quote-section {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  margin-left: -50vw;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* stays in the same light cream family as the rest of the page, just a
+     touch deeper than --bg so the section reads as distinct without
+     breaking the site's light theme */
+  background: var(--surface2);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 100px 24px;
+}
+
+.glow-top {
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  width: 620px;
+  height: 300px;
+  transform: translate(-50%, 0);
+  background: radial-gradient(ellipse at center, rgba(217,119,87,0.22) 0%, transparent 72%);
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.1s linear;
+}
+
+.glow-shape {
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.28;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.1s linear;
+}
+
+.glow-1 { top: 10%; left: 0%; background: var(--clay); }
+.glow-2 { bottom: 8%; right: 0%; background: var(--clay-dark); }
+
+.quote-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  text-align: center;
+}
+
+.quote-text {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3.2vw, 2.15rem);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.quote-attr {
+  margin-top: 30px;
   font-family: var(--mono);
-  font-size: 0.7rem;
-  color: #C13515;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-dim);
+}
+
+@media (max-width: 720px) {
+  .quote-section { padding: 70px 20px; min-height: auto; }
+  .glow-shape { width: 240px; height: 240px; filter: blur(50px); }
 }
 </style>
 {% endblock %}
@@ -344,88 +649,145 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); }
 
 <form style="display:none;">{% csrf_token %}</form>
 
-<!-- HEADER -->
-<div class="idx-header">
-  <div>
-    <h1>Resume <em>Analyzer</em></h1>
-  </div>
-  <div class="idx-header-sub">ATS Compatibility Tool</div>
-</div>
-
-<!-- TWO PANEL GRID -->
-<div class="idx-grid">
-
-  <!-- RESUME PANEL -->
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-head-icon">📄</div>
-      <div class="panel-head-meta">
-        <span class="panel-head-step">Step 01</span>
-        <span class="panel-head-title">Your Resume</span>
+<!-- ══════════ FULLSCREEN 3D HERO ══════════ -->
+<div class="hero-full">
+  <div class="orb-field">
+    <div class="cube-scene">
+      <div class="cube-ghost-wrap" id="ghostCube">
+        <div class="cube-spin">
+          <div class="cube-face face-front"></div>
+          <div class="cube-face face-back"></div>
+          <div class="cube-face face-right"></div>
+          <div class="cube-face face-left"></div>
+          <div class="cube-face face-top"></div>
+          <div class="cube-face face-bottom"></div>
+        </div>
       </div>
     </div>
-    <div class="panel-body">
+  </div>
+  <div class="hero-scrim"></div>
 
-      <span class="field-label">Upload PDF</span>
-      <div class="file-drop" id="fileDrop">
-        <input type="file" id="resumeFile" accept=".pdf" onchange="handleFile(this)">
-        <div class="file-drop-icon">📎</div>
-        <div class="file-drop-text">Drop PDF here or click to browse</div>
-        <div class="file-drop-sub">PDF files only · Max 10MB</div>
-        <div class="file-name" id="fileName"></div>
-      </div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow fade-up"><span class="dot"></span> AI-Powered Resume Intelligence</div>
 
-      <div class="or-divider"><span>or paste text</span></div>
+    <h1 class="hero-h1 fade-up-delay-1">
+      <span>Know exactly</span>
+      <span>why you're <em>getting ignored.</em></span>
+    </h1>
 
-      <span class="field-label">Resume Text</span>
-      <textarea
-        class="idx-textarea"
-        id="resumeText"
-        placeholder="Paste your resume content here..."></textarea>
+    <p class="hero-sub fade-up-delay-2">
+      Upload your resume and a job description — get an ATS score, a full breakdown of what's missing, and a <b>personalized roadmap</b> to close the gap.
+    </p>
 
+    <div class="hero-ctas fade-up-delay-3">
+      <a href="#analyze-panel" class="hero-cta-primary">Analyze My Resume &rarr;</a>
+      <a href="/history/" class="hero-cta-ghost">View past analyses</a>
+    </div>
+
+    <div class="hero-stats fade-up-delay-4">
+      <div class="hero-stat"><div class="n">4.81</div><div class="l">Avg. Score Improvement</div></div>
+      <div class="hero-stat"><div class="n">3</div><div class="l">Signal Breakdowns</div></div>
+      <div class="hero-stat"><div class="n">&lt;30s</div><div class="l">To Full Report</div></div>
     </div>
   </div>
 
-  <!-- JD PANEL -->
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-head-icon">💼</div>
-      <div class="panel-head-meta">
-        <span class="panel-head-step">Step 02</span>
-        <span class="panel-head-title">Job Description</span>
+  <div class="hero-scroll-cue">Scroll to analyze &darr;</div>
+</div>
+
+<!-- ══════════ ANALYZER ══════════ -->
+<div class="section-pad" id="analyze-panel">
+  <div class="section-eyebrow">Step 01 &ndash; 02</div>
+  <div class="section-title">Upload &amp; Match</div>
+
+  <div class="idx-grid">
+
+    <!-- RESUME PANEL -->
+    <div class="panel tilt-panel">
+      <div class="panel-head">
+        <div class="panel-head-icon">📄</div>
+        <div class="panel-head-meta">
+          <span class="panel-head-step">Step 01</span>
+          <span class="panel-head-title">Your Resume</span>
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <span class="field-label">Upload PDF</span>
+        <div class="file-drop" id="fileDrop">
+          <input type="file" id="resumeFile" accept=".pdf" onchange="handleFile(this)">
+          <div class="file-drop-icon">📎</div>
+          <div class="file-drop-text">Drop PDF here or click to browse</div>
+          <div class="file-drop-sub">PDF files only &middot; Max 10MB</div>
+          <div class="file-name" id="fileName"></div>
+        </div>
+
+        <div class="or-divider"><span>or paste text</span></div>
+
+        <span class="field-label">Resume Text</span>
+        <textarea
+          class="idx-textarea"
+          id="resumeText"
+          placeholder="Paste your resume content here..."></textarea>
+
       </div>
     </div>
-    <div class="panel-body">
 
-      <span class="field-label">Paste Job Description *</span>
-      <textarea
-        class="idx-textarea"
-        id="jdText"
-        style="min-height:380px"
-        placeholder="Paste the full job description here..."></textarea>
+    <!-- JD PANEL -->
+    <div class="panel tilt-panel">
+      <div class="panel-head">
+        <div class="panel-head-icon">💼</div>
+        <div class="panel-head-meta">
+          <span class="panel-head-step">Step 02</span>
+          <span class="panel-head-title">Job Description</span>
+        </div>
+      </div>
+      <div class="panel-body">
 
+        <span class="field-label">Paste Job Description *</span>
+        <textarea
+          class="idx-textarea"
+          id="jdText"
+          style="min-height:380px"
+          placeholder="Paste the full job description here..."></textarea>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUBMIT PANEL -->
+  <div class="submit-panel tilt-panel">
+    <div class="submit-info">
+      <h3>Ready to analyze?</h3>
+      <p>AI-powered ATS scoring &middot; Career intelligence &middot; Skill gap analysis</p>
+    </div>
+    <div>
+      <button class="btn-analyze" id="analyzeBtn" onclick="analyzeResume()">
+        Run Analysis &rarr;
+      </button>
+      <div class="loading-bar" id="loadingBar">
+        <div class="loading-bar-fill"></div>
+      </div>
+      <div class="loading-text" id="loadingText">Analyzing your resume...</div>
+      <div class="err-box" id="errBox"></div>
     </div>
   </div>
 
 </div>
 
-<!-- SUBMIT PANEL -->
-<div class="submit-panel">
-  <div class="submit-info">
-    <h3>Ready to analyze?</h3>
-    <p>AI-powered ATS scoring · Career intelligence · Skill gap analysis</p>
-  </div>
-  <div>
-    <button class="btn-analyze" id="analyzeBtn" onclick="analyzeResume()">
-      Run Analysis →
-    </button>
-    <div class="loading-bar" id="loadingBar">
-      <div class="loading-bar-fill"></div>
-    </div>
-    <div class="loading-text" id="loadingText">Analyzing your resume...</div>
-    <div class="err-box" id="errBox"></div>
+
+<!-- ══════════ SECTION 2: QUOTE / PARALLAX ══════════ -->
+<div class="quote-section" id="quoteSection">
+  <div class="glow-top" id="glowTop"></div>
+  <div class="glow-shape glow-1" id="glowLeft"></div>
+  <div class="glow-shape glow-2" id="glowRight"></div>
+
+  <div class="quote-inner">
+    <p class="quote-text">&ldquo;Most resumes never get read by a human. An ATS filters them out in seconds. ResumeIQ shows you exactly what the machine sees — and what's missing — so your resume gets to the person who was supposed to read it all along.&rdquo;</p>
+    <p class="quote-attr">The ResumeIQ Team</p>
   </div>
 </div>
+
 
 {% endblock %}
 
@@ -503,4 +865,58 @@ function showErr(msg) {
   b.textContent = 'Error: ' + msg;
   b.style.display = 'block';
 }
+
+/* ══════════ 3D TILT ON MOUSE MOVE ══════════ */
+(function () {
+  const panels = document.querySelectorAll('.tilt-panel');
+  const MAX_TILT = 4; // degrees, kept subtle so text stays readable
+
+  panels.forEach(function (panel) {
+    panel.addEventListener('mousemove', function (e) {
+      const rect = panel.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;  // 0..1
+      const y = (e.clientY - rect.top) / rect.height;  // 0..1
+      const rotateY = (x - 0.5) * (MAX_TILT * 2);
+      const rotateX = (0.5 - y) * (MAX_TILT * 2);
+      panel.style.transform = 'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+    });
+    panel.addEventListener('mouseleave', function () {
+      panel.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    });
+  });
+})();
+
+/* ══════════ GHOST CUBE — replay reveal on click ══════════ */
+document.addEventListener('click', function () {
+  var el = document.getElementById('ghostCube');
+  if (!el) return;
+  el.style.animation = 'none';
+  void el.offsetWidth; // force reflow so the animation can replay
+  el.style.animation = '';
+});
+
+/* ══════════ QUOTE SECTION PARALLAX ══════════ */
+/* Drives the glow elements referenced by getElementById above; previously
+   these ids existed with no scroll handler, so the glows never moved. */
+(function () {
+  const section = document.getElementById('quoteSection');
+  const glowTop = document.getElementById('glowTop');
+  const glowLeft = document.getElementById('glowLeft');
+  const glowRight = document.getElementById('glowRight');
+  if (!section) return;
+
+  function onScroll() {
+    const rect = section.getBoundingClientRect();
+    const vh = window.innerHeight;
+    if (rect.bottom < 0 || rect.top > vh) return;
+
+    const progress = 1 - Math.min(Math.max((rect.top) / vh, 0), 1);
+    if (glowTop)   glowTop.style.transform   = 'translate(-50%, ' + (progress * 60 - 30) + 'px)';
+    if (glowLeft)  glowLeft.style.transform  = 'translateY(' + (progress * -50) + 'px)';
+    if (glowRight) glowRight.style.transform = 'translateY(' + (progress * 50) + 'px)';
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
 {% endblock %}

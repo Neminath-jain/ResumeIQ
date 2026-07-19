@@ -5,18 +5,9 @@ Sign up at https://console.groq.com/keys — it's free, no credit card, and give
 you a generous daily rate limit on fast open models (Llama 3.3 70B here).
 
 ## 2. Add the key to your environment
-Easiest: add to a `.env` file (if you use python-decouple / django-environ), or
-export it directly before running the server:
-
-    export GROQ_API_KEY="gsk_your_key_here"      # Linux/macOS
-    setx GROQ_API_KEY "gsk_your_key_here"        # Windows (new shell after)
-
-Or, quick-and-dirty for local dev only, add directly to settings.py:
 
     GROQ_API_KEY = "gsk_your_key_here"
 
-and change `os.environ.get("GROQ_API_KEY", "")` in chatbot.py to
-`getattr(settings, "GROQ_API_KEY", "")` if you'd rather read it from settings.
 
 ## 3. Drop in the view
 Copy `chatbot.py` into whichever Django app holds your other views

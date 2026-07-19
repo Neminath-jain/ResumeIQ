@@ -454,6 +454,9 @@ button { cursor: pointer; font-family: var(--font); }
 
 <body>
 
+<!-- Ensures the CSRF cookie exists on every page, even ones without their own form (needed for the chat widget's fetch POST) -->
+<form style="display:none;">{% csrf_token %}</form>
+
 <nav>
   <a href="/" class="nav-logo">
     <div class="nav-logo-mark"></div>
@@ -485,8 +488,9 @@ button { cursor: pointer; font-family: var(--font); }
 <script>
 {% block scripts %}{% endblock %}
 </script>
+
+<!-- ══════════ AI CHAT WIDGET (logged-in users only) ══════════ -->
 {% if user.is_authenticated %}
-<!-- ══════════ AI CHAT WIDGET ══════════ -->
 <div class="chat-widget" id="chatWidget">
   <button class="chat-toggle" id="chatToggle" aria-label="Open AI Assistant">
     <span class="chat-toggle-icon chat-toggle-icon-chat">💬</span>
@@ -617,16 +621,30 @@ button { cursor: pointer; font-family: var(--font); }
         })
       });
 
-      const data = await resp.json();
+      let data;
+      const raw = await resp.text();
+      try {
+        data = JSON.parse(raw);
+      } catch (parseErr) {
+        // Response wasn't JSON — usually means Django rejected the request
+        // before it reached our view (403 CSRF failure, 500 debug page, etc).
+        console.error('Chat API returned non-JSON response (status ' + resp.status + '):', raw.slice(0, 500));
+        throw new Error('Server returned an unexpected response (status ' + resp.status + ').');
+      }
+
       hideTyping();
 
-      if (!resp.ok) throw new Error(data.error || 'Something went wrong.');
+      if (!resp.ok) {
+        console.error('Chat API error (status ' + resp.status + '):', data.error);
+        throw new Error(data.error || ('Request failed with status ' + resp.status));
+      }
 
       appendMessage('bot', data.reply);
       chatHistory.push({ role: 'assistant', content: data.reply });
 
     } catch (err) {
       hideTyping();
+      console.error('Chat widget error:', err);
       appendMessage('bot', "Sorry, I couldn't respond just now. Please try again in a moment.");
     } finally {
       isSending = false;
@@ -641,5 +659,6 @@ button { cursor: pointer; font-family: var(--font); }
 })();
 </script>
 {% endif %}
+
 </body>
 </html>

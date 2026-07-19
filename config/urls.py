@@ -10,7 +10,10 @@ urlpatterns = [
     path('', include('resume_analyzer.urls')),
 
     path('login/',
-         auth_views.LoginView.as_view(template_name='auth/login.html'),
+         auth_views.LoginView.as_view(
+             template_name='auth/login.html',
+             redirect_authenticated_user=True,
+         ),
          name='login'),
 
     path('logout/',
