@@ -1,15 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import login
 from .forms import RegisterForm
-from django.core.mail import send_mail
-from django.conf import settings as django_settings
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 
-from .models import ResumeAnalysis, EmailVerificationToken
+from .models import ResumeAnalysis
 from .serializers import AnalyzeRequestSerializer, ResumeAnalysisSerializer
 from .services.pdf_extractor import extract_text_from_pdf
 from .services.llm_service import (
@@ -30,45 +30,33 @@ import traceback
 
 def register_view(request):
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
 
-            token_obj = EmailVerificationToken.objects.create(user=user)
-
-            verify_url = request.build_absolute_uri(
-                f'/verify-email/{token_obj.token}/'
-            )
-
-            send_mail(
-                subject='Verify your email - Resume Analyzer',
-                message=f'Hi {user.username},\n\nClick the link below to verify your email:\n\n{verify_url}\n\nIf you did not register, ignore this email.',
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[form.cleaned_data['email']],
-                fail_silently=False,
-            )
-
-            return render(request, 'auth/verify_email_sent.html', {
-                'email': form.cleaned_data['email']
+        if password1 != password2:
+            return render(request, 'auth/register.html', {
+                'form': {'errors': True},
+                'error': 'Passwords do not match.'
             })
-    else:
-        form = RegisterForm()
 
-    return render(request, 'auth/register.html', {'form': form})
+        if User.objects.filter(email=email).exists():
+            return render(request, 'auth/register.html', {
+                'form': {'errors': True},
+                'error': 'An account with this email already exists.'
+            })
+
+        user = User.objects.create_user(
+            username=username, email=email, password=password1, is_active=True
+        )
+
+        login(request, user)
+        return redirect('/')
+
+    return render(request, 'auth/register.html')
 
 
-def verify_email_view(request, token):
-    try:
-        token_obj = EmailVerificationToken.objects.get(token=token)
-        user = token_obj.user
-        user.is_active = True
-        user.save()
-        token_obj.delete()
-        return render(request, 'auth/verify_email_success.html')
-    except EmailVerificationToken.DoesNotExist:
-        return render(request, 'auth/verify_email_invalid.html')
 
 
 # =========================================================

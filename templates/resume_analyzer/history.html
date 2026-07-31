@@ -4,21 +4,22 @@
 {% block extra_head %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --ink: #222222;
-  --ink-dim: #717171;
-  --ink-faint: #B0B0B0;
+  --ink: #1F1B16;
+  --ink-dim: #6B6459;
+  --ink-faint: #A8A096;
   --paper: #FFFFFF;
-  --paper-raise: #F7F7F7;
+  --paper-raise: #F5F4ED;
   --paper-card: #FFFFFF;
-  --rule: #DDDDDD;
-  --accent: #FF385C;
-  --accent-dim: rgba(255,56,92,0.15);
+  --rule: #E1DED2;
+  --accent: #D97757;
+  --accent-dark: #BF5B3E;
+  --accent-dim: rgba(217,119,87,0.15);
   --mono: 'Inter', sans-serif;
-  --serif: 'Inter', sans-serif;
+  --serif: 'Source Serif 4', Georgia, serif;
   --sans: 'Inter', sans-serif;
 }
 
@@ -52,8 +53,8 @@ body {
 }
 
 .h-header h1 em {
-  font-style: normal;
-  font-weight: 800;
+  font-style: italic;
+  font-weight: 600;
   color: var(--accent);
 }
 
@@ -70,7 +71,7 @@ body {
 .h-table-wrap {
   background: var(--paper-card);
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
 }
 
@@ -155,7 +156,7 @@ body {
 }
 
 .score-bar-fill.low  { background: #C13515; }
-.score-bar-fill.mid  { background: #FF385C; }
+.score-bar-fill.mid  { background: #D97757; }
 .score-bar-fill.high { background: #008A05; }
 
 /* ── STATUS BADGE ── */
@@ -176,9 +177,9 @@ body {
 }
 
 .status-processing {
-  background: rgba(255,56,92,0.12);
-  color: #FF385C;
-  border: 1px solid rgba(255,56,92,0.25);
+  background: var(--accent-dim);
+  color: var(--accent-dark);
+  border: 1px solid rgba(217,119,87,0.25);
 }
 
 .status-failed {
@@ -228,7 +229,7 @@ body {
 }
 
 .view-link:hover {
-  color: var(--accent);
+  color: var(--accent-dark);
   border-color: var(--accent);
   background: var(--accent-dim);
 }
@@ -239,7 +240,7 @@ body {
   padding: 80px 24px;
   background: var(--paper-card);
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .h-empty-icon {
@@ -265,17 +266,17 @@ body {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--accent-dark);
   text-decoration: none;
   padding: 12px 24px;
   border: 1px solid var(--accent);
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--accent-dim);
   transition: all 0.2s;
 }
 
 .btn-start:hover {
-  background: rgba(255,56,92,0.25);
+  background: rgba(217,119,87,0.25);
 }
 
 /* ── FOOTER ── */
@@ -298,12 +299,12 @@ body {
   text-decoration: none;
   padding: 12px 24px;
   border: 1px solid var(--rule);
-  border-radius: 12px;
+  border-radius: 999px;
   transition: all 0.2s;
 }
 
 .btn-back:hover {
-  color: var(--accent);
+  color: var(--accent-dark);
   border-color: var(--accent);
   background: var(--accent-dim);
 }

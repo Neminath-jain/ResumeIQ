@@ -7,18 +7,18 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --rausch: #FF385C;
-  --rausch-dark: #E31C5F;
-  --rausch-deep: #BD1E59;
-  --ink: #222222;
-  --ink-dim: #717171;
-  --ink-faint: #B0B0B0;
-  --border: #DDDDDD;
-  --bg-soft: #F7F7F7;
+  --clay: #D97757;
+  --clay-dark: #BF5B3E;
+  --clay-deep: #96442E;
+  --ink: #1F1B16;
+  --ink-dim: #6B6459;
+  --ink-faint: #A8A096;
+  --border: #E1DED2;
+  --bg-soft: #F5F4ED;
   --surface: #FFFFFF;
   --white: #FFFFFF;
   --success: #008A05;
@@ -28,6 +28,7 @@
   --error-bg: #FEF1EF;
   --error-border: #FBD4CD;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
   --radius-sm: 8px;
   --radius-md: 12px;
   --shadow-card: 0 2px 8px rgba(0,0,0,0.06);
@@ -70,7 +71,7 @@ nav {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: linear-gradient(135deg, var(--rausch), var(--rausch-deep));
+  background: linear-gradient(135deg, var(--clay), var(--clay-dark));
   flex-shrink: 0;
 }
 
@@ -83,7 +84,7 @@ nav {
 
 .nav-logo-text em {
   font-style: normal;
-  color: var(--rausch);
+  color: var(--clay);
   font-weight: 800;
 }
 
@@ -111,8 +112,8 @@ nav {
 }
 
 .nav-link.active {
-  color: var(--rausch);
-  border-bottom-color: var(--rausch);
+  color: var(--clay);
+  border-bottom-color: var(--clay);
 }
 
 .nav-right {
@@ -132,7 +133,7 @@ nav {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--rausch);
+  background: var(--clay);
   flex-shrink: 0;
 }
 
@@ -162,7 +163,7 @@ nav {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--white);
-  background: linear-gradient(to right, var(--rausch), var(--rausch-deep));
+  background: linear-gradient(to right, var(--clay), var(--clay-dark));
   text-decoration: none;
   padding: 10px 20px;
   border-radius: 999px;
@@ -189,7 +190,8 @@ nav {
   transition: box-shadow 0.2s;
 }
 
-h2 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
+h1, h2 { font-family: var(--font-serif); }
+h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--ink); }
 h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--ink-dim); }
 
 .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 85vh; }
@@ -199,14 +201,14 @@ h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--ink-
 .form-field input { width: 100%; padding: 16px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); color: var(--ink); font-size: .95rem; font-family: var(--font); outline: none; transition: .15s ease; }
 .form-field input:focus { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 .form-field label { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); background: var(--white); padding: 0 6px; color: var(--ink-dim); font-size: .9rem; pointer-events: none; transition: .15s ease; }
-.form-field input:focus + label, .form-field input:not(:placeholder-shown) + label { top: -9px; font-size: .75rem; font-weight: 600; color: var(--rausch); }
-.auth-card button { width: 100%; padding: 14px; border: none; background: linear-gradient(to right, var(--rausch), var(--rausch-deep)); color: var(--white); font-weight: 700; font-size: .95rem; cursor: pointer; border-radius: var(--radius-md); transition: .15s; }
+.form-field input:focus + label, .form-field input:not(:placeholder-shown) + label { top: -9px; font-size: .75rem; font-weight: 600; color: var(--clay); }
+.auth-card button { width: 100%; padding: 14px; border: none; background: linear-gradient(to right, var(--clay), var(--clay-dark)); color: var(--white); font-weight: 700; font-size: .95rem; cursor: pointer; border-radius: var(--radius-md); transition: .15s; }
 .auth-card button:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .error-box { background: var(--error-bg); border: 1px solid var(--error-border); padding: 14px; border-radius: var(--radius-sm); color: var(--error); font-size: .85rem; margin-bottom: 20px; }
 .auth-msg { text-align: center; font-size: .95rem; color: var(--ink-dim); line-height: 1.6; }
 .auth-link { margin-top: 28px; text-align: center; font-size: .88rem; }
 .auth-link a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-.auth-link a:hover { color: var(--rausch); }
+.auth-link a:hover { color: var(--clay); }
 
 .badge { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 .badge-green { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
@@ -230,8 +232,8 @@ button { cursor: pointer; font-family: var(--font); }
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, var(--rausch), var(--rausch-deep));
-  box-shadow: 0 8px 24px rgba(255,56,92,0.4);
+  background: linear-gradient(135deg, var(--clay), var(--clay-dark));
+  box-shadow: 0 8px 24px rgba(217,119,87,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,7 +242,7 @@ button { cursor: pointer; font-family: var(--font); }
   position: relative;
 }
 
-.chat-toggle:hover { transform: scale(1.06); box-shadow: 0 10px 28px rgba(255,56,92,0.5); }
+.chat-toggle:hover { transform: scale(1.06); box-shadow: 0 10px 28px rgba(217,119,87,0.5); }
 
 .chat-toggle-icon {
   font-size: 1.5rem;
@@ -289,7 +291,7 @@ button { cursor: pointer; font-family: var(--font); }
 }
 
 .chat-panel-header {
-  background: linear-gradient(120deg, var(--rausch), var(--rausch-deep));
+  background: linear-gradient(120deg, var(--clay), var(--clay-dark));
   padding: 18px 20px;
   display: flex;
   align-items: center;
@@ -367,7 +369,7 @@ button { cursor: pointer; font-family: var(--font); }
 }
 
 .chat-msg-user .chat-bubble {
-  background: linear-gradient(120deg, var(--rausch), var(--rausch-deep));
+  background: linear-gradient(120deg, var(--clay), var(--clay-dark));
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -429,7 +431,7 @@ button { cursor: pointer; font-family: var(--font); }
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, var(--rausch), var(--rausch-deep));
+  background: linear-gradient(135deg, var(--clay), var(--clay-dark));
   color: #fff;
   font-size: 1rem;
   cursor: pointer;

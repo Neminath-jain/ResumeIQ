@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 import json
-import uuid
 
 
 class ResumeAnalysis(models.Model):
@@ -83,12 +82,3 @@ class ResumeAnalysis(models.Model):
     @career_roadmap.setter
     def career_roadmap(self, value):
         self.career_roadmap_json = json.dumps(value)
-
-
-class EmailVerificationToken(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    token = models.UUIDField(default=uuid.uuid4)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.token}"
