@@ -109,7 +109,7 @@ def compute_ats_score(resume_text, jd_text, resume_data, jd_data):
             "Moderate Match" if ats_score >= 50 else \
             "Needs Improvement"
 
-    print(f"=== SCORES === keyword:{keyword_score:.1f} semantic:{semantic_score:.1f} experience:{experience_score:.1f} quality:{quality_score:.1f} → ATS:{ats_score}")
+    print(f"=== SCORES === keyword:{keyword_score:.1f} semantic:{semantic_score:.1f} experience:{experience_score:.1f} quality:{quality_score:.1f} -> ATS:{ats_score}")
 
     return {
         "ats_score": ats_score,

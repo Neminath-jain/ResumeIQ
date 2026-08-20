@@ -163,7 +163,10 @@ class AnalyzeResumeView(APIView):
                     resume_text,
                     jd_text
                 )
-                print("=== CAREER AI OUTPUT ===", career_ai)
+                try:
+                    print("=== CAREER AI OUTPUT ===", str(career_ai).encode('ascii', errors='replace').decode('ascii'))
+                except Exception:
+                    pass
 
             except Exception as career_err:
                 print("=== CAREER AI ERROR ===", str(career_err))
