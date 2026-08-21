@@ -3,10 +3,18 @@ import json
 from groq import Groq
 
 
+from pathlib import Path
+from dotenv import load_dotenv
+
 def get_groq_client():
-    api_key = os.getenv("GROQ_API_KEY")
+    from django.conf import settings
+    api_key = getattr(settings, "GROQ_API_KEY", None) or os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise ValueError("GROQ_API_KEY is not set in environment variables")
+        env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+        load_dotenv(dotenv_path=env_path)
+        api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not set in environment variables or .env file")
     return Groq(api_key=api_key)
 
 
@@ -16,8 +24,7 @@ DEFAULT_MODELS = [
     "groq/compound",
     "qwen/qwen3.6-27b",
     "openai/gpt-oss-120b",
-    "llama-3.1-8b-instant",
-    "llama-3.3-70b-versatile",
+    "openai/gpt-oss-20b",
 ]
 MODEL_CANDIDATES = [m for m in DEFAULT_MODELS if m]
 
@@ -35,12 +42,9 @@ def call_groq_chat(client, messages, temperature=0.1, max_tokens=None):
                 kwargs["max_tokens"] = max_tokens
             return client.chat.completions.create(**kwargs)
         except Exception as e:
-            err_str = str(e)
-            if "404" in err_str or "model_not_found" in err_str or "does not exist" in err_str:
-                print(f"=== GROQ MODEL {model} NOT FOUND, TRYING FALLBACK ===")
-                last_error = e
-                continue
-            raise e
+            print(f"=== GROQ MODEL {model} FAILED ({e}), TRYING NEXT CANDIDATE ===")
+            last_error = e
+            continue
     if last_error:
         raise last_error
     raise RuntimeError("No Groq models available")

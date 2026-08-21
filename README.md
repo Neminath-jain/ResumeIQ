@@ -14,7 +14,7 @@ cd ai_resume_analyzer
 ```bash
 python -m venv venv
 source venv/bin/activate        # Linux/Mac
-venv\Scripts\activate           # Windows
+.\myenv\Scripts\activate
 ```
 
 ### 3. Install dependencies
