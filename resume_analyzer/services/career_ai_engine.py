@@ -4,12 +4,22 @@ import traceback
 from .llm_service import get_groq_client, call_groq_chat
 
 
-def generate_career_intelligence(resume_text, jd_text):
+def generate_career_intelligence(resume_text, jd_text, rag_match=None):
     try:
         client = get_groq_client()
 
+        rag_context = ""
+        if rag_match and isinstance(rag_match, dict):
+            sem_matches = rag_match.get("semantic_matches", [])
+            missing = rag_match.get("still_missing_skills", [])
+            
+            sem_str = ", ".join([f"{m['jd_skill']} (matched via {m['resume_skill']}: {int(m['score']*100)}%)" for m in sem_matches])
+            miss_str = ", ".join(missing)
+            
+            rag_context = f"\n\nRAG EMBEDDING MATCH BREAKDOWN:\n- Semantically Matched Related Skills: {sem_str if sem_str else 'None'}\n- Still Missing JD Skills: {miss_str if miss_str else 'None'}"
+
         prompt = f"""You are a top-tier senior technical recruiter and ATS career strategist.
-Analyze this RESUME against the JOB DESCRIPTION (or target role) and perform a comprehensive, rigorous skill gap analysis.
+Analyze this RESUME against the JOB DESCRIPTION (or target role) and perform a comprehensive, rigorous skill gap analysis.{rag_context}
 
 RESUME:
 {resume_text}

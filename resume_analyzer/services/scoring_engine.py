@@ -1,51 +1,44 @@
 import re
+from .rag_skill_matcher import match_skills_rag
 
 
 def compute_ats_score(resume_text, jd_text, resume_data, jd_data):
 
-    resume_skills = [s.lower().strip() for s in resume_data.get("technical_skills", [])]
-    required_skills = [s.lower().strip() for s in jd_data.get("required_skills", [])]
-    preferred_skills = [s.lower().strip() for s in jd_data.get("preferred_skills", [])]
+    resume_skills = [s.strip() for s in resume_data.get("technical_skills", []) if s and s.strip()]
+    required_skills = [s.strip() for s in jd_data.get("required_skills", []) if s and s.strip()]
+    preferred_skills = [s.strip() for s in jd_data.get("preferred_skills", []) if s and s.strip()]
 
     resume_text_lower = resume_text.lower()
     jd_text_lower = jd_text.lower()
 
+    # 1. KEYWORD MATCH (40%)
     if not required_skills:
-        keyword_score = 50
+        keyword_score = 50.0
     else:
         matched = sum(
             1 for skill in required_skills
-            if skill in resume_skills or skill in resume_text_lower
+            if skill.lower() in [s.lower() for s in resume_skills] or skill.lower() in resume_text_lower
         )
-        keyword_score = (matched / len(required_skills)) * 100
+        keyword_score = (matched / len(required_skills)) * 100.0
 
     if preferred_skills:
         pref_matched = sum(
             1 for skill in preferred_skills
-            if skill in resume_skills or skill in resume_text_lower
+            if skill.lower() in [s.lower() for s in resume_skills] or skill.lower() in resume_text_lower
         )
-        pref_bonus = (pref_matched / len(preferred_skills)) * 15
-        keyword_score = min(keyword_score + pref_bonus, 100)
+        pref_bonus = (pref_matched / len(preferred_skills)) * 15.0
+        keyword_score = min(keyword_score + pref_bonus, 100.0)
 
-    stop_words = {
-        'the','a','an','and','or','but','in','on','at','to','for',
-        'of','with','by','from','is','are','was','were','be','been',
-        'has','have','had','will','would','could','should','may','might',
-        'we','you','they','he','she','it','this','that','these','those',
-        'our','your','their','its','as','if','then','than','so','yet',
-        'both','either','not','no','nor','just','also','into','about',
-        'up','out','over','after','before','through','during','i','me'
-    }
+    # 2. RAG EMBEDDING-BASED SKILL SEMANTIC MATCH (30%)
+    rag_match = match_skills_rag(
+        resume_skills=resume_skills,
+        required_skills=required_skills,
+        preferred_skills=preferred_skills,
+        similarity_threshold=0.75
+    )
+    semantic_score = rag_match.get("semantic_score", 50.0)
 
-    resume_words = set(resume_text_lower.split()) - stop_words
-    jd_words = set(jd_text_lower.split()) - stop_words
-
-    if jd_words:
-        common_words = resume_words & jd_words
-        semantic_score = min((len(common_words) / len(jd_words)) * 100 * 2, 100)
-    else:
-        semantic_score = 50
-
+    # 3. EXPERIENCE MATCH (20%)
     years_exp = resume_data.get("years_experience", "")
     exp_required = jd_data.get("experience_required", "")
 
@@ -63,21 +56,22 @@ def compute_ats_score(resume_text, jd_text, resume_data, jd_data):
             jd_years = int(nums[0])
 
     if resume_years == 0 and years_exp:
-        experience_score = 60
+        experience_score = 60.0
     elif resume_years == 0:
-        experience_score = 40
+        experience_score = 40.0
     elif jd_years == 0:
-        experience_score = 70
+        experience_score = 70.0
     elif resume_years >= jd_years:
-        experience_score = 100
+        experience_score = 100.0
     elif resume_years >= jd_years - 1:
-        experience_score = 80
+        experience_score = 80.0
     elif resume_years >= jd_years - 2:
-        experience_score = 60
+        experience_score = 60.0
     else:
-        experience_score = 40
+        experience_score = 40.0
 
-    quality_score = 40
+    # 4. RESUME QUALITY SCORE (10%)
+    quality_score = 40.0
 
     achievements = resume_data.get("quantified_achievements", [])
     if achievements:
@@ -94,26 +88,28 @@ def compute_ats_score(resume_text, jd_text, resume_data, jd_data):
     numbers_in_resume = len(re.findall(r'\d+%|\$\d+|\d+x|\d+\+', resume_text))
     quality_score += min(numbers_in_resume * 2, 15)
 
-    quality_score = min(quality_score, 100)
+    quality_score = min(quality_score, 100.0)
 
+    # ATS HYBRID OVERALL SCORE (40% / 30% / 20% / 10%)
     ats_score = (
         0.40 * keyword_score +
-        0.25 * semantic_score +
+        0.30 * semantic_score +
         0.20 * experience_score +
-        0.15 * quality_score
+        0.10 * quality_score
     )
 
-    ats_score = round(min(ats_score, 100), 2)
+    ats_score = round(min(ats_score, 100.0), 2)
 
     label = "Strong Match" if ats_score >= 75 else \
             "Moderate Match" if ats_score >= 50 else \
             "Needs Improvement"
 
-    print(f"=== SCORES === keyword:{keyword_score:.1f} semantic:{semantic_score:.1f} experience:{experience_score:.1f} quality:{quality_score:.1f} -> ATS:{ats_score}")
+    print(f"=== RAG ATS SCORES === keyword:{keyword_score:.1f} RAG-semantic:{semantic_score:.1f} experience:{experience_score:.1f} quality:{quality_score:.1f} -> ATS:{ats_score}")
 
     return {
         "ats_score": ats_score,
         "label": label,
+        "rag_match": rag_match,
         "breakdown": {
             "keyword_score": round(keyword_score, 2),
             "semantic_score": round(semantic_score, 2),

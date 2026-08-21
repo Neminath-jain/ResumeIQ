@@ -23,19 +23,22 @@ flowchart TD
         D --> E1["Resume Data (Skills, Exp, Projects, Metrics)"]
         D --> E2["JD Data (Required Skills, Exp Required)"]
         
-        E1 & E2 --> F["Hybrid ATS Scoring Engine (scoring_engine.py)"]
-        E1 & E2 --> G["AI Career Intelligence Engine (career_ai_engine.py)"]
+        E1 & E2 --> RAG["LangChain + Embedding RAG Skill Matcher (rag_skill_matcher.py)"]
+        RAG --> RAG_OUT["RAG Match Breakdown (exact_matches, semantic_matches, missing_skills)"]
+        
+        RAG_OUT --> F["Hybrid ATS Scoring Engine (scoring_engine.py)"]
+        RAG_OUT --> G["AI Career Intelligence Engine (career_ai_engine.py)"]
         
         subgraph ATS Scoring
             F --> F1["Keyword Match (40%)"]
-            F --> F2["TF-IDF Cosine Similarity (30%)"]
+            F --> F2["LangChain RAG Skill Semantic Score (30%)"]
             F --> F3["Experience Alignment (20%)"]
             F --> F4["Resume Quality Score (10%)"]
         end
         
         subgraph Career Intelligence
             G --> G1["Detected Role & Level"]
-            G --> G2["Critical Skill Gaps"]
+            G --> G2["Critical Skill Gaps (from RAG missing_skills)"]
             G --> G3["Advanced Skill Gaps"]
             G --> G4["Resume Weaknesses"]
             G --> G5["Career Roadmap"]
@@ -44,7 +47,7 @@ flowchart TD
     end
     
     F1 & F2 & F3 & F4 --> H["Overall ATS Score"]
-    G1 & G2 & G3 & G4 & G5 & G6 --> I["DB Model Persistence (ResumeAnalysis)"]
+    G1 & G2 & G3 & G4 & G5 & G6 & RAG_OUT --> I["DB Model Persistence (ResumeAnalysis)"]
     H --> I
     
     I --> J["JSON Response with Result URL"]

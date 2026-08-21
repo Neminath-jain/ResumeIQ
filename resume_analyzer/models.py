@@ -40,6 +40,9 @@ class ResumeAnalysis(models.Model):
     career_roadmap_json = models.TextField(default='[]', blank=True)
     personalized_advice = models.TextField(blank=True)
 
+    # ===== RAG Skill Match Breakdown =====
+    skill_match_breakdown_json = models.TextField(default='{}', blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,6 +53,17 @@ class ResumeAnalysis(models.Model):
         return f"{self.user.username} - Analysis #{self.pk}"
 
     # ===== JSON Helpers =====
+
+    @property
+    def skill_match_breakdown(self):
+        try:
+            return json.loads(self.skill_match_breakdown_json)
+        except Exception:
+            return {}
+
+    @skill_match_breakdown.setter
+    def skill_match_breakdown(self, value):
+        self.skill_match_breakdown_json = json.dumps(value)
 
     @property
     def critical_skill_gaps(self):

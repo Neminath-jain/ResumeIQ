@@ -14,20 +14,13 @@ class AnalyzeRequestSerializer(serializers.Serializer):
 
 
 class ResumeAnalysisSerializer(serializers.ModelSerializer):
-    resume_data = serializers.SerializerMethodField()
-    jd_data = serializers.SerializerMethodField()
-    missing_skills = serializers.SerializerMethodField()
-    suggestions = serializers.SerializerMethodField()
-    improved_bullets = serializers.SerializerMethodField()
+    skill_match_breakdown = serializers.SerializerMethodField()
 
     class Meta:
         model = ResumeAnalysis
         fields = ['id','status','ats_score','keyword_score','semantic_score',
-                  'experience_score','quality_score','resume_data','jd_data',
-                  'missing_skills','suggestions','improved_bullets','created_at']
+                  'experience_score','quality_score','skill_match_breakdown','detected_role',
+                  'experience_level','critical_skill_gaps','advanced_skill_gaps',
+                  'resume_weaknesses','career_roadmap','personalized_advice','created_at']
 
-    def get_resume_data(self, obj): return obj.resume_data
-    def get_jd_data(self, obj): return obj.jd_data
-    def get_missing_skills(self, obj): return obj.missing_skills
-    def get_suggestions(self, obj): return obj.suggestions
-    def get_improved_bullets(self, obj): return obj.improved_bullets
+    def get_skill_match_breakdown(self, obj): return obj.skill_match_breakdown

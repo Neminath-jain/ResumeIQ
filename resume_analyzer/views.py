@@ -147,12 +147,14 @@ class AnalyzeResumeView(APIView):
             )
 
             breakdown = score_result.get("breakdown", {})
+            rag_match = score_result.get("rag_match", {})
 
             analysis.ats_score = score_result.get("ats_score", 0)
             analysis.keyword_score = breakdown.get("keyword_score", 0)
             analysis.semantic_score = breakdown.get("semantic_score", 0)
             analysis.experience_score = breakdown.get("experience_score", 0)
             analysis.quality_score = breakdown.get("quality_score", 0)
+            analysis.skill_match_breakdown = rag_match
 
             # =====================================================
             # STEP 2: AI CAREER INTELLIGENCE
@@ -161,7 +163,8 @@ class AnalyzeResumeView(APIView):
             try:
                 career_ai = generate_career_intelligence(
                     resume_text,
-                    jd_text
+                    jd_text,
+                    rag_match=rag_match
                 )
                 if not isinstance(career_ai, dict):
                     career_ai = {}
