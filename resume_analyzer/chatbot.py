@@ -2,15 +2,13 @@
 
 import json
 import os
+import traceback
 
-import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
+from .services.llm_service import get_groq_client, call_groq_chat
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.3-70b-versatile"  # free tier, fast + capable
 
 SYSTEM_PROMPT = """You are the AI Career Assistant embedded inside ResumeIQ, \
 an AI-powered resume analyzer with ATS compatibility scoring, career \
@@ -37,12 +35,6 @@ detail yet.
 @require_POST
 @csrf_protect
 def chat_api(request):
-    if not GROQ_API_KEY:
-        return JsonResponse(
-            {"error": "Chatbot is not configured. Set GROQ_API_KEY in your environment."},
-            status=500,
-        )
-
     try:
         data = json.loads(request.body.decode("utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -91,28 +83,20 @@ def chat_api(request):
     messages.append({"role": "user", "content": message})
 
     try:
-        resp = requests.post(
-            GROQ_URL,
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": GROQ_MODEL,
-                "messages": messages,
-                "temperature": 0.6,
-                "max_tokens": 500,
-            },
-            timeout=30,
+        client = get_groq_client()
+        response = call_groq_chat(
+            client=client,
+            messages=messages,
+            temperature=0.6,
+            max_tokens=500
         )
-        resp.raise_for_status()
-        reply = resp.json()["choices"][0]["message"]["content"]
+        reply = response.choices[0].message.content
         return JsonResponse({"reply": reply})
 
-    except requests.exceptions.RequestException:
+    except Exception as e:
+        print("=== CHATBOT ERROR ===", str(e))
+        print(traceback.format_exc())
         return JsonResponse(
             {"error": "Chat service is unavailable right now. Please try again shortly."},
             status=502,
         )
-    except (KeyError, IndexError, ValueError):
-        return JsonResponse({"error": "Unexpected response from chat service."}, status=502)
