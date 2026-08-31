@@ -74,6 +74,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 db_url = os.environ.get('DATABASE_URL')
+# Ignore broken/stale Supabase project host if set in environment
+if db_url and 'yurtxtdnvdrhihdepeep' in db_url:
+    db_url = None
+
 if not db_url or db_url.startswith('sqlite'):
     DATABASES = {
         'default': {
