@@ -24,11 +24,18 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# Local dev fallback so runserver still works without setting env vars
-if DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# Ensure local dev and Render hosts are always permitted
+for host in ['localhost', '127.0.0.1', '.onrender.com', '*']:
+    if host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
-CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS if h]
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+    "https://127.0.0.1",
+    "https://localhost",
+    "http://127.0.0.1",
+    "http://localhost",
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -114,7 +121,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # Email settings
 DEFAULT_FROM_EMAIL = "noreply@resumeanalyzer.com"
