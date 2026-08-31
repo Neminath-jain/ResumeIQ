@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import login
+from django.db import IntegrityError
 from .forms import RegisterForm
 
 from rest_framework.views import APIView
@@ -30,10 +31,16 @@ import traceback
 
 def register_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
+        username = (request.POST.get('username') or '').strip()
+        email = (request.POST.get('email') or '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
+
+        if not username or not email or not password1:
+            return render(request, 'auth/register.html', {
+                'form': {'errors': True},
+                'error': 'All fields are required.'
+            })
 
         if password1 != password2:
             return render(request, 'auth/register.html', {
@@ -41,20 +48,33 @@ def register_view(request):
                 'error': 'Passwords do not match.'
             })
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(username__iexact=username).exists():
+            return render(request, 'auth/register.html', {
+                'form': {'errors': True},
+                'error': 'An account with this username already exists.'
+            })
+
+        if User.objects.filter(email__iexact=email).exists():
             return render(request, 'auth/register.html', {
                 'form': {'errors': True},
                 'error': 'An account with this email already exists.'
             })
 
-        user = User.objects.create_user(
-            username=username, email=email, password=password1, is_active=True
-        )
+        try:
+            user = User.objects.create_user(
+                username=username, email=email, password=password1, is_active=True
+            )
+        except IntegrityError:
+            return render(request, 'auth/register.html', {
+                'form': {'errors': True},
+                'error': 'An account with this username or email already exists.'
+            })
 
         login(request, user)
         return redirect('/')
 
     return render(request, 'auth/register.html')
+
 
 
 

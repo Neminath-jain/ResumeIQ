@@ -342,8 +342,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webk
       <form method="POST">
         {% csrf_token %}
         <div class="f">
-          <label class="f-label">Username</label>
-          <input class="f-input" type="text" name="username" required autocomplete="username" placeholder="your username">
+          <label class="f-label">Username or Email</label>
+          <input class="f-input" type="text" name="username" required autocomplete="username" placeholder="your username or email">
         </div>
         <div class="f">
           <label class="f-label">Password</label>

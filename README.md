@@ -3,6 +3,18 @@
 
 ---
 
+## 📚 Project Documentation
+
+Detailed system architecture and specifications are available in the [`docs/`](docs/README.md) folder:
+* 🏗️ [**Architecture Guide**](docs/ARCHITECTURE.md)
+* 🧠 [**RAG & Similarity Search Specification**](docs/RAG_AND_SIMILARITY_SEARCH.md)
+* 📋 [**Product Requirements (PRD)**](docs/PRD.md)
+* ⚙️ [**Software Requirements (SRS)**](docs/SRS.md)
+* 🎨 [**UI/UX Specification**](docs/UI_UX.md)
+* 🤖 [**AI Chatbot Setup Guide**](docs/CHATBOT_SETUP.md)
+
+---
+
 ## Quick Start
 
 ### 1. Extract and enter the project

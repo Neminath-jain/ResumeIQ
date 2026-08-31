@@ -50,8 +50,12 @@ def call_groq_chat(client, messages, temperature=0.1, max_tokens=None):
     raise RuntimeError("No Groq models available")
 
 
+import re
+
 def clean_json(content):
-    """Strip markdown code fences and extract JSON."""
+    """Strip markdown code fences and extract JSON object/array substring."""
+    if not content:
+        return ""
     content = content.strip()
     if "```" in content:
         parts = content.split("```")
@@ -63,16 +67,53 @@ def clean_json(content):
                 content = part
                 break
     # Find first { or [ and last } or ]
-    start = min(
-        content.find("{") if content.find("{") != -1 else len(content),
-        content.find("[") if content.find("[") != -1 else len(content)
-    )
+    first_brace = content.find("{")
+    first_bracket = content.find("[")
+    
+    if first_brace == -1:
+        start = first_bracket
+    elif first_bracket == -1:
+        start = first_brace
+    else:
+        start = min(first_brace, first_bracket)
+
     end_brace = content.rfind("}")
     end_bracket = content.rfind("]")
     end = max(end_brace, end_bracket) + 1
-    if start < end:
+    
+    if start != -1 and end > start:
         content = content[start:end]
     return content
+
+
+def parse_json_robustly(content):
+    """Parse JSON string robustly, repairing invalid backslashes, trailing commas, and control chars."""
+    cleaned = clean_json(content)
+    if not cleaned:
+        raise ValueError("Empty content after JSON extraction")
+
+    # 1. Direct standard parse attempt
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Fix unescaped backslashes (e.g. C:\path or \d+ or invalid escapes like \P)
+    # Replace backslashes not followed by standard escape characters (", \, /, b, f, n, r, t, uXXXX)
+    repaired = re.sub(r'\\(?![/"bfnrtu]|u[0-9a-fA-F]{4})', r'\\\\', cleaned)
+
+    # 3. Remove trailing commas in objects and arrays
+    repaired = re.sub(r',\s*([\}\]])', r'\1', repaired)
+
+    # Retry standard parse
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # 4. Strict replacement of raw newlines inside JSON string values
+    repaired_strict = re.sub(r'(?<!\\)\n', r'\\n', repaired)
+    return json.loads(repaired_strict)
 
 
 def extract_resume_data(resume_text):
@@ -107,7 +148,7 @@ Resume:
         )
 
         content = response.choices[0].message.content
-        return json.loads(clean_json(content))
+        return parse_json_robustly(content)
     except Exception as e:
         print("=== RESUME EXTRACT FALLBACK ===", e)
         try:
@@ -117,21 +158,6 @@ Resume:
             extracted = []
         return {
             "technical_skills": extracted,
-            "years_experience": "",
-            "education": "",
-            "projects": [],
-            "quantified_achievements": []
-        }
-
-    content = response.choices[0].message.content
-    print("=== RAW RESUME EXTRACT ===", content[:200])
-
-    try:
-        return json.loads(clean_json(content))
-    except Exception as e:
-        print("=== RESUME PARSE ERROR ===", e)
-        return {
-            "technical_skills": [],
             "years_experience": "",
             "education": "",
             "projects": [],
@@ -169,7 +195,7 @@ Job Description:
         )
 
         content = response.choices[0].message.content
-        return json.loads(clean_json(content))
+        return parse_json_robustly(content)
     except Exception as e:
         print("=== JD EXTRACT FALLBACK ===", e)
         try:
@@ -211,8 +237,9 @@ Bullets:
         )
 
         content = response.choices[0].message.content
-        return json.loads(clean_json(content))
+        return parse_json_robustly(content)
     except Exception as e:
         print("=== BULLETS PARSE ERROR ===", e)
         return bullets
+
 

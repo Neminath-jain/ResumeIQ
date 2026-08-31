@@ -1,7 +1,7 @@
 import os
 import json
 import traceback
-from .llm_service import get_groq_client, call_groq_chat
+from .llm_service import get_groq_client, call_groq_chat, parse_json_robustly
 
 
 def generate_career_intelligence(resume_text, jd_text, rag_match=None):
@@ -62,22 +62,9 @@ Return ONLY a raw JSON object with these exact keys. No markdown, no code blocks
             temperature=0.3
         )
 
-        content = response.choices[0].message.content.strip()
+        content = response.choices[0].message.content
+        result = parse_json_robustly(content)
 
-        # Clean up if model still adds markdown
-        if "```" in content:
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-            content = content.strip()
-
-        # Find JSON object in response
-        start = content.find("{")
-        end = content.rfind("}") + 1
-        if start != -1 and end > start:
-            content = content[start:end]
-
-        result = json.loads(content)
         return {
             "detected_role": result.get("detected_role", "Software Engineer"),
             "experience_level": result.get("experience_level", "Mid-level"),

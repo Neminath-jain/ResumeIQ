@@ -1,158 +1,312 @@
-# System Architecture & Technical Documentation
+# System Architecture Document
 
-## AI Resume Analyzer & ATS Job Matcher
-
----
-
-## 1. Overview
-
-**AI Resume Analyzer & ATS Job Matcher** is a hybrid artificial intelligence application built with **Django**, **Groq LLM Acceleration**, and **scikit-learn NLP**. It automatically parses candidate resumes (PDF or raw text), extracts structured professional data, computes a multi-metric ATS (Applicant Tracking System) match score against any Job Description (JD), and generates detailed, explainable career intelligence (Critical Gaps, Advanced Gaps, Resume Weaknesses, Sequential Career Roadmap, and Personalized Advice).
+## Product Name: AI Resume Analyzer & ATS Job Matcher (ResumeIQ)
+**Document Version:** 1.0  
+**Status:** Approved Architectural Blueprint  
+**Primary Framework:** Django 4.2 LTS / Groq LLM Acceleration / scikit-learn NLP  
 
 ---
 
-## 2. System Architecture & Data Flow
+## 1. Executive Architecture Summary
+
+The **AI Resume Analyzer & ATS Job Matcher** is a web-based artificial intelligence platform designed to parse candidate resumes, compare them against target job descriptions, calculate a 4-factor ATS match score (Keyword, Semantic, Experience, Quality), and synthesize explainable career intelligence.
+
+The architecture emphasizes **practicality, transparency, and high performance** — avoiding unnecessary microservices or heavy message brokers for the MVP. It uses a monolithic Django application with modular service layers, fast in-memory TF-IDF vectorization, external high-speed LLM inference (Groq API), and persistent ORM storage.
+
+---
+
+## 2. Tech Stack Selection & Justification
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             FULL TECH STACK                                 │
+├───────────────────┬─────────────────────────────────────────────────────────┤
+│ Layer             │ Technologies Chosen                                     │
+├───────────────────┼─────────────────────────────────────────────────────────┤
+│ Frontend UI       │ HTML5, Vanilla JavaScript (ES6+), Modern CSS3 (Glass)   │
+│ Backend Web App   │ Python 3.10+, Django 4.2 LTS, Django REST Framework     │
+│ AI / LLM Engine   │ Groq API (Llama 3 70B, Qwen 3.6 27B, Compound Mini)     │
+│ Semantic NLP      │ scikit-learn (TF-IDF Vectorizer & Cosine Similarity)    │
+│ PDF Extraction    │ PyPDF2 (Binary text layer parser)                       │
+│ Data Persistence  │ PostgreSQL (Production via Supabase) / SQLite (Local)  │
+│ Asset Delivery    │ WhiteNoise (Static file middleware)                     │
+│ Server / Gateway  │ Gunicorn / Uvicorn (WSGI/ASGI application server)       │
+└───────────────────┴─────────────────────────────────────────────────────────┘
+```
+
+### Justification:
+* **Django 4.2 LTS:** Provides built-in ORM, secure session management, administrative interface, and rapid REST API integration with Django REST Framework (DRF).
+* **Groq LLM Acceleration:** Delivers ultra-low latency LLM inference (< 1.5s per extraction request), critical for maintaining a sub-4-second end-to-end SLA.
+* **scikit-learn (TF-IDF + Cosine Similarity):** Enables deterministic, fast vector similarity calculations locally without sending raw embeddings over external network boundaries.
+* **Vanilla CSS/JS (No Heavy Framework Overhead):** Ensures lightweight, zero-build-step deployment and instant browser rendering.
+
+---
+
+## 3. High-Level System Architecture & Component Diagram
 
 ```mermaid
 flowchart TD
-    A["User / Frontend Dashboard"] -->|"POST Resume PDF / Text + Job Description"| B["Django API View (AnalyzeResumeView)"]
+    subgraph Client Layer
+        U["Browser / User Interface (Vanilla JS + Glassmorphism)"]
+    end
+
+    subgraph API & Routing Layer
+        R["Django Request Router / Middleware (urls.py)"]
+        V["REST API View (AnalyzeResumeView)"]
+        R --> V
+    end
+
+    subgraph Business Logic & Service Layer
+        P["PDF Text Extractor (pdf_extractor.py)"]
+        L["Groq LLM Structured Extractor (llm_service.py)"]
+        RAG["RAG / Embedding Skill Matcher (rag_skill_matcher.py)"]
+        S["Hybrid ATS Scoring Engine (scoring_engine.py)"]
+        C["AI Career Intelligence Engine (career_ai_engine.py)"]
+    end
+
+    subgraph Persistence Layer
+        DB[("PostgreSQL / SQLite Database (ResumeAnalysis)")]
+        FS["Local / Cloud Storage (Uploaded PDF Files)"]
+    end
+
+    subgraph External Services
+        GROQ["Groq Cloud LLM API (Groq Llama / Qwen Models)"]
+    end
+
+    U -->|"POST /api/analyze/ (PDF/Text + JD)"| R
+    V --> P
+    V --> L
+    L -->|"HTTP POST JSON Schema"| GROQ
+    GROQ -->|"Extracted Structured JSON"| L
     
-    subgraph Processing Pipeline
-        B --> C["PDF Text Extractor (PyPDF2)"]
-        C --> D["LLM Structured Extractor (Groq API / llm_service)"]
-        
-        D --> E1["Resume Data (Skills, Exp, Projects, Metrics)"]
-        D --> E2["JD Data (Required Skills, Exp Required)"]
-        
-        E1 & E2 --> RAG["LangChain + Embedding RAG Skill Matcher (rag_skill_matcher.py)"]
-        RAG --> RAG_OUT["RAG Match Breakdown (exact_matches, semantic_matches, missing_skills)"]
-        
-        RAG_OUT --> F["Hybrid ATS Scoring Engine (scoring_engine.py)"]
-        RAG_OUT --> G["AI Career Intelligence Engine (career_ai_engine.py)"]
-        
-        subgraph ATS Scoring
-            F --> F1["Keyword Match (40%)"]
-            F --> F2["LangChain RAG Skill Semantic Score (30%)"]
-            F --> F3["Experience Alignment (20%)"]
-            F --> F4["Resume Quality Score (10%)"]
-        end
-        
-        subgraph Career Intelligence
-            G --> G1["Detected Role & Level"]
-            G --> G2["Critical Skill Gaps (from RAG missing_skills)"]
-            G --> G3["Advanced Skill Gaps"]
-            G --> G4["Resume Weaknesses"]
-            G --> G5["Career Roadmap"]
-            G --> G6["Personalized Advice"]
-        end
+    L --> RAG
+    L --> S
+    RAG --> S
+    RAG --> C
+    
+    S -->|"Sub-scores (Keyword, Semantic, Exp, Quality)"| V
+    C -->|"Gaps, Roadmap, Weakness, Advice"| V
+    
+    V -->|"Save Analysis Record"| DB
+    V -->|"Save PDF File"| FS
+    V -->|"JSON Response with ID"| U
+```
+
+---
+
+## 4. Subsystem Components & Responsibilities
+
+### 4.1 Ingestion & Parsing Subsystem (`pdf_extractor.py`)
+* **Responsibility:** Ingest binary PDF files or raw text input.
+* **Mechanism:** Utilizes `PyPDF2.PdfReader` to extract clean text streams, handles empty pages, strips control characters, and performs minimum character length checks ($\ge 100$ chars).
+
+### 4.2 LLM Entity Extraction Subsystem (`llm_service.py`)
+* **Responsibility:** Convert unstructured resume text and JD text into strongly typed JSON structures.
+* **Mechanism:** Formulates prompt templates enforcing Pydantic-like JSON output. Features multi-model failover rotation:
+  $$\text{Model Chain: } \texttt{groq/compound-mini} \longrightarrow \texttt{qwen/qwen3.6-27b} \longrightarrow \texttt{openai/gpt-oss-120b}$$
+
+### 4.3 Hybrid ATS Scoring Subsystem (`scoring_engine.py`)
+* **Responsibility:** Calculate the 4-part weighted ATS score.
+* **Formulas:**
+  1. **Keyword Overlap ($S_{\text{keyword}}$ - 40%):** Exact skill set intersection.
+  2. **Semantic Similarity ($S_{\text{semantic}}$ - 30%):** TF-IDF n-gram vectorization and Cosine Similarity:
+     $$\text{Cosine Similarity}(\vec{A}, \vec{B}) = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|}$$
+  3. **Experience Score ($S_{\text{experience}}$ - 20%):** Ratio of candidate experience to target requirement.
+  4. **Quality Score ($S_{\text{quality}}$ - 10%):** Checks for metrics/numbers, projects, education, contact info.
+
+### 4.4 AI Career Intelligence Subsystem (`career_ai_engine.py`)
+* **Responsibility:** Generate explainable feedback components.
+* **Outputs:** Critical Skill Gaps, Advanced Skill Gaps, Resume Weaknesses, 5-Step Sequential Roadmap, Personalized Advice.
+
+### 4.5 Persistence & Reporting Subsystem (`models.py`, `views.py`)
+* **Responsibility:** Save analysis results to the database (`ResumeAnalysis` ORM model) and render interactive dashboards.
+
+---
+
+## 5. End-to-End Data Flow Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Candidate Browser
+    participant API as Django API View
+    participant PDF as PyPDF2 Service
+    participant LLM as Groq LLM Client
+    participant Scorer as Hybrid Scoring Engine
+    participant Career as Career AI Engine
+    participant DB as Database (ORM)
+
+    User->>API: POST /api/analyze/ (PDF file or Text + Job Description)
+    alt PDF file uploaded
+        API->>PDF: extract_text_from_pdf(file)
+        PDF-->>API: Clean Raw Resume Text
     end
     
-    F1 & F2 & F3 & F4 --> H["Overall ATS Score"]
-    G1 & G2 & G3 & G4 & G5 & G6 & RAG_OUT --> I["DB Model Persistence (ResumeAnalysis)"]
-    H --> I
+    API->>LLM: extract_structured_resume(resume_text)
+    LLM-->>API: Resume Structured JSON
     
-    I --> J["JSON Response with Result URL"]
-    J --> K["Result View Dashboard (result.html)"]
+    API->>LLM: extract_structured_jd(jd_text)
+    LLM-->>API: JD Structured JSON
+    
+    API->>Scorer: compute_ats_score(resume_json, jd_json)
+    Scorer-->>API: Sub-scores & Overall ATS Score
+    
+    API->>Career: generate_career_intelligence(resume_json, jd_json, scores)
+    Career-->>API: Gaps, Weaknesses, Roadmap & Advice
+    
+    API->>DB: ResumeAnalysis.objects.create(...)
+    DB-->>API: Saved Record (ID #102)
+    
+    API-->>User: HTTP 200 OK JSON { status: "success", analysis_id: 102 }
+    User->>API: GET /analysis/102/
+    API-->>User: Rendered Dashboard HTML (result.html)
 ```
 
 ---
 
-## 3. Component Execution Lifecycle
+## 6. Database Architecture & Storage Strategy
 
-1. **Client Request Submission**: The candidate submits their resume (via PDF file upload or direct text paste) and a target Job Description to `/api/analyze/`.
-2. **Text Ingestion & Extraction**: If a PDF is uploaded, `extract_text_from_pdf()` processes the binary stream and extracts clean raw text.
-3. **Structured Data Parsing**: `llm_service.py` calls the Groq API (using active ultra-fast models like `groq/compound-mini` or `qwen/qwen3.6-27b`) to parse technical skills, years of experience, projects, education, and quantified achievements.
-4. **Hybrid ATS Scoring**:
-   - `scoring_engine.py` evaluates exact skill overlaps (Keyword Score).
-   - Generates TF-IDF n-gram vectors and computes Cosine Similarity (Semantic Score).
-   - Compares candidate experience against JD requirements (Experience Score).
-   - Audits resume formatting, metrics, projects, and contact info (Quality Score).
-5. **AI Career Intelligence Generation**: `career_ai_engine.py` analyzes the candidate's complete profile against the target role to generate critical skill gaps, advanced skill gaps, structural resume weaknesses, a 5-step career roadmap, and tailored strategic advice.
-6. **Persistence & Presentation**: The result is saved to the PostgreSQL/SQLite database (`ResumeAnalysis` model) and displayed on an interactive dashboard with score gauges and progress bars.
-
----
-
-## 4. Technologies Used & Full Explanation
-
-| Layer / Component | Technology | Purpose & How It Works |
-| :--- | :--- | :--- |
-| **Web Framework** | **Django 4.2** | Core backend framework handling routing, request parsing, session management, template rendering, and database abstraction (ORM). |
-| **API Layer** | **Django REST Framework (DRF)** | Provides structured REST API endpoints (`/api/analyze/`, `/api/analysis/<id>/`) supporting `MultiPartParser` (file uploads) and JSON payloads. |
-| **AI / LLM Engine** | **Groq API & Llama/Qwen Models** | Ultra-high-speed LLM inference engine. Powers structured JSON extraction, skill gap identification, career roadmap synthesis, and personal advice. Implements automatic multi-model rotation (`groq/compound-mini`, `qwen/qwen3.6-27b`, `openai/gpt-oss-120b`). |
-| **Semantic NLP Matching** | **scikit-learn (TF-IDF & Cosine Similarity)** | Vectorizes the textual content of both the resume and the job description using Term Frequency-Inverse Document Frequency (TF-IDF) and computes spatial Cosine Similarity between the vectors without relying exclusively on LLMs. |
-| **PDF Extraction** | **PyPDF2** | Parses PDF document pages, extracts text layers, cleans whitespace, and returns plaintext for ingestion. |
-| **Database** | **PostgreSQL (Supabase) / SQLite** | Stores historical resume analyses, calculated scores, breakdown metrics, and extracted career intelligence using Django's ORM and `dj-database-url`. |
-| **Environment Config** | **python-dotenv** | Securely manages secrets and environment variables (`GROQ_API_KEY`, `DATABASE_URL`, `SECRET_KEY`) isolated from version control. |
-| **Static Assets** | **WhiteNoise** | Efficiently serves static files (CSS, JavaScript, images) directly from the Python/Django web application. |
-| **Frontend UI** | **Vanilla JS, HTML5, Modern CSS** | Interactive UI featuring dynamic score progress circles, expandable breakdown cards, and responsive glassmorphism aesthetic styling. |
-
----
-
-## 5. ATS Scoring Algorithm Formula
-
-The ATS matching engine uses a weighted hybrid formula:
-
-$$\text{ATS Score} = (S_{\text{keyword}} \times 0.40) + (S_{\text{semantic}} \times 0.30) + (S_{\text{experience}} \times 0.20) + (S_{\text{quality}} \times 0.10)$$
-
-### Sub-Score Computation Breakdown
-
-1. **Keyword Match ($S_{\text{keyword}}$ - 40%)**:
-   Calculated by checking extracted technical skills from the resume against the required skills identified in the Job Description:
-   $$S_{\text{keyword}} = \frac{|\text{Resume Skills} \cap \text{Required JD Skills}|}{|\text{Required JD Skills}|} \times 100$$
-
-2. **Semantic Similarity ($S_{\text{semantic}}$ - 30%)**:
-   Evaluates how closely the overall context and terminology of the resume matches the job description using TF-IDF n-gram vectorization and Cosine Similarity:
-   $$\text{Cosine Similarity}(\vec{A}, \vec{B}) = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|}$$
-
-3. **Experience Match ($S_{\text{experience}}$ - 20%)**:
-   Compares the candidate's years of experience against the requested experience level in the job description:
-   - Full points ($100\%$) if candidate experience meets or exceeds requirement.
-   - Pro-rated score if partial experience is present.
-
-4. **Resume Quality ($S_{\text{quality}}$ - 10%)**:
-   Audits the resume structure:
-   - Presence of quantified metrics/numbers in experience bullet points (+30%)
-   - Listed projects (+30%)
-   - Stated education (+20%)
-   - Contact info (+20%)
-
----
-
-## 6. Directory & Code Base Structure
+### 6.1 Database Schema (`ResumeAnalysis` Entity)
+The database stores both structured scalar metrics and serialized JSON data arrays to maintain full fidelity of historical runs.
 
 ```
-ai_resume_analyzer/
-├── ARCHITECTURE.md                  # Project Architecture & Tech Stack Documentation
-├── README.md                        # Quickstart guide & installation instructions
-├── manage.py                        # Django command-line utility
-├── requirements.txt                 # Project dependencies
-├── .env                             # Environment variables & API keys (git-ignored)
-│
-├── config/                          # Core Django Project Configuration
-│   ├── settings.py                  # App settings, DB config, Groq API key, middleware
-│   ├── urls.py                      # Global URL router
-│   ├── wsgi.py                      # WSGI server entry point
-│   └── asgi.py                      # ASGI server entry point
-│
-├── resume_analyzer/                 # Primary Application Module
-│   ├── models.py                    # ResumeAnalysis DB schema
-│   ├── views.py                     # API views (AnalyzeResumeView, result_view, history_view)
-│   ├── urls.py                      # Application URL routes
-│   ├── serializers.py               # DRF Serializers for API requests/responses
-│   ├── forms.py                     # User authentication forms
-│   │
-│   ├── services/                    # Business Logic & Core Engines
-│   │   ├── llm_service.py           # Groq API client, model fallback, resume/JD extraction
-│   │   ├── career_ai_engine.py      # Skill gap analysis, career roadmap & advice engine
-│   │   ├── scoring_engine.py        # ATS hybrid scoring formula (TF-IDF + Cosine Similarity)
-│   │   ├── pdf_extractor.py         # PyPDF2 PDF text extraction service
-│   │   └── skill_extractor.py       # Rule-based fallback skill extraction
-│   │
-│   └── templates/                   # HTML Templates
-│       ├── base.html                # Base layout with navbar & styling
-│       └── resume_analyzer/
-│           ├── index.html           # Main analysis upload form & JD input
-│           ├── result.html          # ATS score dashboard, skill gaps & career roadmap
-│           └── history.html         # Past analysis history page
-│
-└── static/                          # Static files (CSS, JavaScript, branding assets)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          ResumeAnalysis ENTITY                              │
+├────────────────────────────┬──────────────────┬─────────────────────────────┤
+│ Field Name                 │ Type             │ Description                 │
+├────────────────────────────┼──────────────────┼─────────────────────────────┤
+│ id                         │ BigAutoField     │ Primary Key                 │
+│ user                       │ ForeignKey(User) │ FK to Auth User             │
+│ resume_file                │ FileField        │ PDF path in media/resumes/  │
+│ resume_text                │ TextField        │ Raw resume text             │
+│ job_description            │ TextField        │ Target job description      │
+│ status                     │ CharField(20)    │ pending/completed/failed    │
+│ ats_score                  │ FloatField       │ Final score (0-100)         │
+│ keyword_score              │ FloatField       │ Keyword sub-score (0-100)   │
+│ semantic_score             │ FloatField       │ Semantic sub-score (0-100)  │
+│ experience_score           │ FloatField       │ Experience score (0-100)    │
+│ quality_score              │ FloatField       │ Quality score (0-100)       │
+│ detected_role              │ CharField(200)   │ Detected job title          │
+│ experience_level           │ CharField(100)   │ Seniority level             │
+│ critical_skill_gaps_json   │ TextField        │ JSON array                  │
+│ advanced_skill_gaps_json   │ TextField        │ JSON array                  │
+│ resume_weaknesses_json     │ TextField        │ JSON array                  │
+│ career_roadmap_json        │ TextField        │ JSON array                  │
+│ personalized_advice        │ TextField        │ Advice text                 │
+│ skill_match_breakdown_json │ TextField        │ JSON map                    │
+│ created_at                 │ DateTimeField    │ Auto creation timestamp     │
+│ updated_at                 │ DateTimeField    │ Auto update timestamp       │
+└────────────────────────────┴──────────────────┴─────────────────────────────┘
 ```
+
+### 6.2 File & Media Storage
+* **Local Development:** Uploaded PDF files are stored in `media/resumes/` and served locally.
+* **Production Deployment:** Configured to support cloud object storage (e.g. AWS S3 or Supabase Storage) via Django `django-storages`.
+
+---
+
+## 7. API Specifications & Endpoints
+
+### Endpoint 1: Submit Analysis Request
+* **URL:** `/api/analyze/`
+* **HTTP Method:** `POST`
+* **Content-Type:** `multipart/form-data` or `application/json`
+* **Request Parameters:**
+  * `resume_file` *(optional file)*: `.pdf` binary document.
+  * `resume_text` *(optional string)*: Raw text string (required if `resume_file` absent).
+  * `job_description` *(required string)*: Plain text job posting ($\ge 100$ chars).
+
+* **Response Payload (HTTP 200 OK):**
+```json
+{
+  "status": "success",
+  "analysis_id": 42,
+  "ats_score": 78.5,
+  "sub_scores": {
+    "keyword_score": 80.0,
+    "semantic_score": 75.0,
+    "experience_score": 85.0,
+    "quality_score": 70.0
+  },
+  "result_url": "/analysis/42/"
+}
+```
+
+### Endpoint 2: Retrieve Analysis Record
+* **URL:** `/api/analysis/<id>/` or `/analysis/<id>/`
+* **HTTP Method:** `GET`
+* **Response:** HTML View Dashboard or REST JSON Representation of the stored `ResumeAnalysis` model.
+
+---
+
+## 8. Authentication & Authorization Architecture
+
+* **Web Session Authentication:** Standard Django session middleware using HTTP-only secure cookies (`sessionid`).
+* **API Token Authorization:** DRF Token authentication header (`Authorization: Token <token>`) for headless or external API access.
+* **Object-Level Authorization:** Views enforce ownership verification — candidates can only inspect or delete `ResumeAnalysis` instances where `instance.user == request.user`.
+
+---
+
+## 9. Security Architecture
+
+1. **Secrets Management:** Secrets (`GROQ_API_KEY`, `SECRET_KEY`, `DATABASE_URL`) are stored strictly in environment variables (`.env`) and loaded via `python-dotenv`.
+2. **CSRF Protection:** State-modifying requests (`POST`) enforce Django's built-in CSRF token checks (`{% csrf_token %}`).
+3. **File Upload Security:**
+   * Strict validation of `.pdf` file extension and file MIME headers.
+   * File size capped at 5MB.
+   * Executable flags disabled in media storage directory.
+4. **Injection Defenses:**
+   * **SQL Injection:** Mitigated by Django ORM parameterized queries.
+   * **XSS (Cross-Site Scripting):** Django template rendering automatically escapes string variables.
+
+---
+
+## 10. Deployment & Infrastructure Strategy
+
+```
+                          ┌──────────────────────────┐
+                          │   Client Browser         │
+                          └────────────┬─────────────┘
+                                       │ HTTPS (443)
+                                       ▼
+                          ┌──────────────────────────┐
+                          │  Reverse Proxy / Nginx   │
+                          │  or Cloud Gateway        │
+                          └────────────┬─────────────┘
+                                       │
+                    ┌──────────────────┴──────────────────┐
+                    │                                     │
+                    ▼                                     ▼
+     ┌─────────────────────────────┐       ┌─────────────────────────────┐
+     │ Gunicorn WSGI Server        │       │ WhiteNoise Static File      │
+     │ (Django App / Python 3.10)  │       │ Middleware (CSS / JS)       │
+     └──────────────┬──────────────┘       └─────────────────────────────┘
+                    │
+            ┌───────┴───────┐
+            │               │
+            ▼               ▼
+     ┌─────────────┐ ┌─────────────┐
+     │ Database    │ │ Groq LLM    │
+     │ (Postgres)  │ │ Cloud API   │
+     └─────────────┘ └─────────────┘
+```
+
+* **Application Hosting:** Compatible with modern Cloud PaaS platforms (Render, Fly.io, AWS App Runner).
+* **Static Assets:** Handled efficiently in production using `WhiteNoise` middleware directly inside Django.
+* **Database Hosting:** Managed PostgreSQL database (e.g. Supabase or Neon) configured via `dj-database-url`.
+
+---
+
+## 11. Monitoring, Logging & Observability
+
+* **Structured Python Logging:** Standardized logging output via Python's `logging` module configured in `config/settings.py`.
+* **API Audit Logging:** Log entries record API request durations, model failovers, and HTTP response statuses.
+* **Error Alerting:** Unhandled backend exceptions trigger HTTP 500 responses and log stack traces for rapid diagnostic isolation.
+
+---
+
+## 12. Scalability & Performance Roadmap
+
+* **Phase 1 (Current Monolith):** Synchronous request handling supported by Groq's high-speed inference engine, executing analyses under 4.0 seconds.
+* **Phase 2 (Async Queue via Celery & Redis):** Offload PDF parsing and LLM API calls to background worker tasks (`celery`) with WebSocket status updates for long-running inputs.
+* **Phase 3 (Caching Layer via Redis):** Cache vector embeddings and repetitive skill extractions in Redis to reduce redundant LLM calls.
