@@ -77,4 +77,4 @@ Return ONLY a raw JSON object with these exact keys. No markdown, no code blocks
     except Exception as e:
         print("=== CAREER AI ERROR ===", e)
         print(traceback.format_exc())
-        return None
+        return {}

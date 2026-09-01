@@ -844,8 +844,24 @@ async function analyzeResume() {
       credentials: 'same-origin'
     });
 
+    const contentType = resp.headers.get('content-type') || '';
+
+    if (!resp.ok) {
+      if (contentType.includes('application/json')) {
+        const errData = await resp.json();
+        throw new Error(errData.error || errData.detail || 'Analysis failed.');
+      } else {
+        if (resp.status === 403) throw new Error('CSRF or authentication session expired. Please refresh the page and try again.');
+        if (resp.status === 401) throw new Error('Your session expired. Please log in again.');
+        throw new Error(`Server error (${resp.status}). Please try again later.`);
+      }
+    }
+
+    if (!contentType.includes('application/json')) {
+      throw new Error('Received unexpected non-JSON response from server. Please try again.');
+    }
+
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Analysis failed');
     window.location.href = data.result_url;
 
   } catch(e) {
