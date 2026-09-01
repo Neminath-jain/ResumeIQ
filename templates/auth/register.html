@@ -361,9 +361,11 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webk
       <div class="form-eyebrow">Create Account</div>
       <h1 class="form-title">Join <em>today.</em></h1>
 
-      {% if form.errors %}
+      {% if error %}
+        <div class="form-err">{{ error }}</div>
+      {% elif form.errors %}
         <div class="form-err">
-          {% for field in form %}{% for error in field.errors %}{{ error }}<br>{% endfor %}{% endfor %}
+          {% for field in form %}{% for err in field.errors %}{{ err }}<br>{% endfor %}{% endfor %}
         </div>
       {% endif %}
 

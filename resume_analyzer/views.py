@@ -70,6 +70,7 @@ def register_view(request):
                 'error': 'An account with this username or email already exists.'
             })
 
+        user.backend = 'resume_analyzer.backends.EmailOrUsernameModelBackend'
         login(request, user)
         return redirect('/')
 
