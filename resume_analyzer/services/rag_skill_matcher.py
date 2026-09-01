@@ -47,17 +47,18 @@ def check_exact_or_alias(jd_skill_norm, resume_skill_norm):
     if jd_skill_norm == resume_skill_norm:
         return True
     
+    # Check cleaned alphanumeric equality (e.g. node.js vs nodejs, c++ vs c++)
+    clean_jd = "".join(ch for ch in jd_skill_norm if ch.isalnum())
+    clean_res = "".join(ch for ch in resume_skill_norm if ch.isalnum())
+    if clean_jd and clean_res and clean_jd == clean_res:
+        return True
+    
     # Check aliases
     jd_alias = TECH_ALIASES.get(jd_skill_norm, jd_skill_norm)
     res_alias = TECH_ALIASES.get(resume_skill_norm, resume_skill_norm)
     if jd_alias == res_alias:
         return True
     
-    # Check substring containment if longer than 3 chars
-    if len(jd_skill_norm) > 3 and len(resume_skill_norm) > 3:
-        if jd_skill_norm in resume_skill_norm or resume_skill_norm in jd_skill_norm:
-            return True
-            
     return False
 
 
@@ -171,9 +172,28 @@ def match_skills_rag(resume_skills, required_skills, preferred_skills=None, simi
                         still_missing_skills.append(jd_skill)
             except Exception as e:
                 print("=== RAG VECTOR MATCHING EXCEPTION ===", e)
-                still_missing_skills.extend(unmatched_jd_skills)
-        else:
-            still_missing_skills.extend(unmatched_jd_skills)
+                model = False
+
+        if not model:
+            import difflib
+            for jd_skill in unmatched_jd_skills:
+                jd_norm = normalize_skill(jd_skill)
+                best_score = 0.0
+                best_match_skill = None
+                for res_skill in resume_skills_clean:
+                    res_norm = normalize_skill(res_skill)
+                    ratio = difflib.SequenceMatcher(None, jd_norm, res_norm).ratio()
+                    if ratio > best_score:
+                        best_score = ratio
+                        best_match_skill = res_skill
+                if best_match_skill and best_score >= 0.80:
+                    semantic_matches.append({
+                        "jd_skill": jd_skill,
+                        "resume_skill": best_match_skill,
+                        "score": round(float(best_score), 3)
+                    })
+                else:
+                    still_missing_skills.append(jd_skill)
 
     # Calculate RAG Semantic Sub-score (0-100)
     exact_credits = len(exact_matches) * 1.0

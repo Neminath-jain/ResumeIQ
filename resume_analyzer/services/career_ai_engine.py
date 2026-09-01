@@ -30,9 +30,9 @@ JOB DESCRIPTION / TARGET ROLE:
 INSTRUCTIONS:
 1. "detected_role": Detect the candidate's exact primary target role based on the resume and job description.
 2. "experience_level": Determine candidate level (Junior, Mid-level, Senior, Lead, Executive).
-3. "critical_skill_gaps": Identify 3 to 5 CRITICAL technical skills, tools, or methodologies required for this role that are missing or underdeveloped in the candidate's resume. MANDATORY: ALWAYS return 3-5 items, never leave empty.
-4. "advanced_skill_gaps": Identify 3 to 5 ADVANCED or NEXT-LEVEL skills/concepts (e.g., System Architecture, CI/CD, Cloud Deployment, Performance Optimization, Containerization) that would elevate this candidate. MANDATORY: ALWAYS return 3-5 items, never leave empty.
-5. "resume_weaknesses": Identify 3 to 5 SPECIFIC weaknesses or areas of improvement in the resume (e.g. lack of quantified impact/metrics, missing testing experience, unexplicit experience level, lack of cloud/DevOps exposure). MANDATORY: ALWAYS return 3-5 items, never leave empty.
+3. "critical_skill_gaps": Identify 3 to 5 CRITICAL technical skills required for this role that are missing or underdeveloped in the candidate's resume. MANDATORY: ALWAYS prioritize the exact skills listed under 'Still Missing JD Skills' above if any are present.
+4. "advanced_skill_gaps": Identify 3 to 5 ADVANCED or NEXT-LEVEL skills/concepts (e.g., System Architecture, CI/CD, Cloud Deployment, Performance Optimization, Containerization) that would elevate this candidate. MANDATORY: ALWAYS return 3-5 items.
+5. "resume_weaknesses": Identify 3 to 5 SPECIFIC weaknesses or areas of improvement in the resume (e.g. lack of quantified impact/metrics, missing testing experience, unexplicit experience level, lack of cloud/DevOps exposure). MANDATORY: ALWAYS return 3-5 items.
 6. "career_roadmap": Provide 5 sequential, highly actionable career steps to overcome all gaps and achieve career growth.
 7. "personalized_advice": Provide a detailed, 3-4 sentence strategic advice paragraph outlining exactly how the candidate can position themselves for maximum success.
 

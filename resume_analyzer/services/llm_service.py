@@ -169,13 +169,18 @@ def extract_jd_data(job_description):
     try:
         client = get_groq_client()
 
-        prompt = f"""Extract required skills from this job description.
+        prompt = f"""Extract all technical skills and requirements from this job description.
 
-Return ONLY a raw JSON object with no markdown, no explanation:
+Analyze the job description carefully and extract:
+1. "required_skills": List ALL explicitly required technical skills, programming languages, frameworks, libraries, databases, cloud platforms, architecture concepts, testing tools, containerization, CI/CD, and methodologies.
+2. "preferred_skills": List nice-to-have or preferred skills.
+3. "experience_required": Required years of experience (e.g. "3 years", "5+ years").
+
+Return ONLY a raw JSON object with no markdown, no code blocks, no explanation:
 
 {{
-  "required_skills": ["skill1", "skill2"],
-  "preferred_skills": ["skill1"],
+  "required_skills": ["Python", "Django", "Docker", "CI/CD", "PostgreSQL", "Automated Testing"],
+  "preferred_skills": ["Redis", "Kubernetes", "AWS"],
   "experience_required": "3 years"
 }}
 
