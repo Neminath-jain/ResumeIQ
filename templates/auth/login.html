@@ -1,360 +1,254 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Sign In &mdash; ResumeIQ Workspace{% endblock %}
 
 {% block extra_head %}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --ink: #1F1B16;
-  --ink-dim: #6B6459;
-  --ink-faint: #A8A096;
-  --bg: #F5F4ED;
-  --surface: #FFFFFF;
-  --surface2: #EDEBE0;
-  --rule: #E1DED2;
-  --clay: #D97757;
-  --clay-dark: #BF5B3E;
-  --clay-dim: rgba(217,119,87,0.12);
-  --error: #C13515;
-  --error-bg: rgba(193,53,21,0.08);
-  --error-border: rgba(193,53,21,0.25);
-  --mono: 'Inter', sans-serif;
-  --serif: 'Source Serif 4', Georgia, serif;
-  --sans: 'Inter', sans-serif;
-  --radius-sm: 10px;
-  --radius-lg: 14px;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
-
-.auth-page {
-  min-height: 92vh;
+.auth-page-swiss {
+  min-height: calc(100vh - 64px);
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1fr 1fr;
+  background: var(--color-background);
 }
 
-@media (max-width: 860px) {
-  .auth-page { grid-template-columns: 1fr; }
-  .auth-left { display: none; }
-}
-
-/* ══════════ LEFT — orb hero, contained ══════════ */
-.auth-left {
-  position: relative;
-  padding: 56px 48px;
+/* Left Hero Showcase */
+.auth-hero-swiss {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: 64px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  text-align: center;
-  overflow: hidden;
-  background: var(--bg);
-  border-right: 1px solid var(--rule);
+  border-right: 1px solid var(--color-border);
 }
 
-.orb-field { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-
-.cube-scene {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300px;
-  height: 300px;
-  transform: translate(-50%, -50%);
-  perspective: 900px;
+.auth-hero-content {
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-.cube-ghost-wrap {
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  filter: blur(18px);
-  transform: scale(0.82);
-  animation: cubeGhostIn 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-}
-
-@keyframes cubeGhostIn {
-  0%   { opacity: 0;   filter: blur(18px); transform: scale(0.8); }
-  60%  { opacity: 0.4;  filter: blur(2px); transform: scale(1.03); }
-  100% { opacity: 0.32; filter: blur(0);   transform: scale(1); }
-}
-
-.cube-spin {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-  animation: cubeSpin 16s linear infinite;
-}
-
-@keyframes cubeSpin {
-  from { transform: rotateX(-18deg) rotateY(0deg); }
-  to   { transform: rotateX(-18deg) rotateY(360deg); }
-}
-
-.cube-face {
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0%, transparent 45%),
-    linear-gradient(155deg, #F3A57E 0%, var(--clay) 55%, var(--clay-dark) 100%);
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: inset 0 0 50px rgba(90,30,10,0.25);
-}
-
-.face-front  { transform: translateZ(150px); }
-.face-back   { transform: rotateY(180deg) translateZ(150px); }
-.face-right  { transform: rotateY(90deg) translateZ(150px); }
-.face-left   { transform: rotateY(-90deg) translateZ(150px); }
-.face-top    { transform: rotateX(90deg) translateZ(150px); opacity: 0.85; }
-.face-bottom { transform: rotateX(-90deg) translateZ(150px); opacity: 0.7; }
-
-.auth-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: radial-gradient(circle at 50% 45%, rgba(245,244,237,0.55) 0%, rgba(245,244,237,0.9) 55%, var(--bg) 100%);
-}
-
-.auth-left-inner { position: relative; z-index: 2; max-width: 440px; }
-
-.pill-tag {
+.auth-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--clay-dim);
-  border: 1px solid rgba(217,119,87,0.25);
-  color: var(--clay-dark);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 8px 16px;
-  border-radius: 999px;
-  margin-bottom: 28px;
-}
-
-.pill-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--clay); }
-
-.auth-left-inner h2 {
-  font-family: var(--serif);
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-shadow: 0 0 20px var(--bg), 0 0 40px var(--bg), 0 0 70px var(--bg);
-}
-
-.auth-left-inner h2 em { font-style: italic; font-weight: 600; color: var(--clay); }
-
-.auth-left-sub {
-  margin-top: 20px;
-  font-size: 0.98rem;
-  line-height: 1.6;
-  color: var(--ink-dim);
-  text-shadow: 0 0 16px var(--bg), 0 0 32px var(--bg);
-}
-
-.auth-stats {
-  margin-top: 36px;
-  display: flex;
-  gap: 32px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.auth-stat .n { font-family: var(--serif); font-size: 1.7rem; font-weight: 700; color: var(--ink); }
-.auth-stat .l {
-  margin-top: 4px;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  font-weight: 600;
-}
-
-/* ══════════ RIGHT — form ══════════ */
-.auth-right {
-  padding: 56px 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--surface);
-}
-
-.form-inner { max-width: 400px; width: 100%; margin: 0 auto; }
-
-.form-eyebrow {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  margin-bottom: 14px;
-}
-
-.form-title {
-  font-family: var(--serif);
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 32px;
-}
-
-.form-title em { font-style: italic; font-weight: 600; color: var(--clay); }
-
-.form-err {
-  font-size: 0.85rem;
-  color: var(--error);
-  background: var(--error-bg);
-  border: 1px solid var(--error-border);
+  font-weight: 600;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin-bottom: 24px;
 }
 
-.f { margin-bottom: 20px; }
-
-.f-label {
-  font-size: 0.8rem;
+.auth-hero-title {
+  font-size: 2.4rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--ink);
+  color: #FFFFFF;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
+}
+
+.auth-hero-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 40px;
+}
+
+.auth-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.auth-hero-stat-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.auth-hero-stat-lbl {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Right Form Section */
+.auth-form-swiss {
+  padding: 64px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-form-header {
+  margin-bottom: 32px;
+}
+
+.auth-form-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.auth-form-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  letter-spacing: -0.02em;
+}
+
+.auth-error-banner {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--color-destructive);
+  font-size: 0.875rem;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+}
+
+.form-group-swiss {
+  margin-bottom: 20px;
+}
+
+.form-label-swiss {
   display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-foreground);
   margin-bottom: 8px;
 }
 
-.f-input {
+.form-input-swiss {
   width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--rule);
+  padding: 12px 16px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  color: var(--ink);
-  font-family: var(--sans);
+  color: var(--color-foreground);
+  font-family: var(--font);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-.f-input:focus { border-color: var(--clay); box-shadow: 0 0 0 3px var(--clay-dim); }
-.f-input::placeholder { color: var(--ink-faint); }
+.form-input-swiss:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.15);
+}
 
-.f-submit { margin-top: 26px; }
-
-.btn-primary {
+.auth-submit-btn {
   width: 100%;
-  background: linear-gradient(155deg, #E08A64 0%, var(--clay) 40%, var(--clay-dark) 100%);
-  border: none;
-  color: #FFFFFF;
-  font-family: var(--sans);
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 15px 32px;
-  cursor: pointer;
-  border-radius: 999px;
-  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.35),
-    0 2px 4px rgba(191,91,62,0.3),
-    0 10px 22px -6px rgba(191,91,62,0.55);
+  margin-top: 8px;
 }
 
-.btn-primary:hover {
-  filter: brightness(1.04);
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.4),
-    0 4px 10px rgba(191,91,62,0.35),
-    0 16px 30px -8px rgba(191,91,62,0.6);
-}
-
-.form-links {
+.auth-links-swiss {
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid var(--rule);
+  border-top: 1px solid var(--color-border);
   display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.875rem;
 }
 
-.form-links a {
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--ink-dim);
+.auth-links-swiss a {
+  color: var(--color-secondary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.auth-links-swiss a:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
-.form-links a:hover { color: var(--clay); }
+@media (max-width: 860px) {
+  .auth-page-swiss { grid-template-columns: 1fr; }
+  .auth-hero-swiss { display: none; }
+  .auth-form-swiss { padding: 48px 24px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-page">
+<div class="auth-page-swiss">
 
-  <div class="auth-left">
-    <div class="orb-field">
-      <div class="cube-scene">
-        <div class="cube-ghost-wrap" id="ghostCube">
-          <div class="cube-spin">
-            <div class="cube-face face-front"></div>
-            <div class="cube-face face-back"></div>
-            <div class="cube-face face-right"></div>
-            <div class="cube-face face-left"></div>
-            <div class="cube-face face-top"></div>
-            <div class="cube-face face-bottom"></div>
-          </div>
-        </div>
+  <!-- LEFT HERO SHOWCASE -->
+  <div class="auth-hero-swiss">
+    <div class="auth-hero-content">
+      <div class="auth-hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        AI Resume Intelligence
       </div>
-    </div>
-    <div class="auth-scrim"></div>
+      <h1 class="auth-hero-title">High-Signal ATS Resume Optimization</h1>
+      <p class="auth-hero-desc">Access your workspace to evaluate resume compatibility, detect critical skill gaps, and track ATS score improvements over time.</p>
 
-    <div class="auth-left-inner">
-      <div class="pill-tag"><span class="dot"></span> AI-Powered Resume Intelligence</div>
-      <h2>Know exactly why you're <em>getting ignored.</em></h2>
-      <p class="auth-left-sub">Upload your resume and a job description — get an ATS score, a full breakdown of what's missing, and a personalized roadmap to close the gap.</p>
-
-      <div class="auth-stats">
-        <div class="auth-stat"><div class="n">4.81</div><div class="l">Avg. Score Improvement</div></div>
-        <div class="auth-stat"><div class="n">3</div><div class="l">Signal Breakdowns</div></div>
-        <div class="auth-stat"><div class="n">&lt;30s</div><div class="l">To Full Report</div></div>
+      <div class="auth-hero-stats">
+        <div>
+          <div class="auth-hero-stat-val">98.4%</div>
+          <div class="auth-hero-stat-lbl">Signal Match</div>
+        </div>
+        <div>
+          <div class="auth-hero-stat-val">3-Tier</div>
+          <div class="auth-hero-stat-lbl">Gap Analysis</div>
+        </div>
+        <div>
+          <div class="auth-hero-stat-val">&lt;30s</div>
+          <div class="auth-hero-stat-lbl">Report Speed</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="auth-right">
-    <div class="form-inner">
-      <div class="form-eyebrow">Sign In</div>
-      <h1 class="form-title">Welcome <em>back.</em></h1>
+  <!-- RIGHT FORM CONTAINER -->
+  <div class="auth-form-swiss">
+    <div class="auth-form-container">
+      <div class="auth-form-header">
+        <div class="auth-form-eyebrow">Authentication</div>
+        <h1 class="auth-form-title">Sign in to ResumeIQ</h1>
+      </div>
 
       {% if form.errors %}
-        <div class="form-err">Invalid username or password.</div>
+        <div class="auth-error-banner">Invalid username or password. Please verify your details and try again.</div>
       {% endif %}
 
       <form method="POST">
         {% csrf_token %}
-        <div class="f">
-          <label class="f-label">Username or Email</label>
-          <input class="f-input" type="text" name="username" required autocomplete="username" placeholder="your username or email">
+        <div class="form-group-swiss">
+          <label class="form-label-swiss">Username or Email</label>
+          <input class="form-input-swiss" type="text" name="username" required autocomplete="username" placeholder="name@example.com">
         </div>
-        <div class="f">
-          <label class="f-label">Password</label>
-          <input class="f-input" type="password" name="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+
+        <div class="form-group-swiss">
+          <label class="form-label-swiss">Password</label>
+          <input class="form-input-swiss" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
         </div>
-        <div class="f-submit">
-          <button type="submit" class="btn-primary">Sign In &rarr;</button>
-        </div>
+
+        <button type="submit" class="btn-primary auth-submit-btn">
+          Sign In
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
       </form>
 
-      <div class="form-links">
+      <div class="auth-links-swiss">
         <a href="{% url 'password_reset' %}">Forgot password?</a>
         <a href="{% url 'register' %}">Create account &rarr;</a>
       </div>
@@ -362,14 +256,4 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); -webk
   </div>
 
 </div>
-{% endblock %}
-
-{% block scripts %}
-document.addEventListener('click', function () {
-  var el = document.getElementById('ghostCube');
-  if (!el) return;
-  el.style.animation = 'none';
-  void el.offsetWidth; // force reflow so the animation can replay
-  el.style.animation = '';
-});
 {% endblock %}

@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --color-primary: #1E3A5F;
+  --color-on-primary: #FFFFFF;
+  --color-secondary: #2563EB;
+  --color-on-secondary: #FFFFFF;
+  --color-accent: #16A34A;
+  --color-on-accent: #000000;
+  --color-background: #F8FAFC;
+  --color-foreground: #0F172A;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0F172A;
+  --color-muted: #E9EEF5;
+  --color-muted-foreground: #475569;
+  --color-border: #CBD5E1;
+  --color-destructive: #DC2626;
+  --color-on-destructive: #FFFFFF;
+  --color-ring: #1E3A5F;
+
+  /* Backward Compatibility Aliases */
+  --ink: var(--color-foreground);
+  --ink-dim: var(--color-muted-foreground);
+  --ink-faint: #94A3B8;
+  --bg: var(--color-background);
+  --surface: var(--color-card);
+  --surface2: var(--color-muted);
+  --rule: var(--color-border);
+  --clay: var(--color-primary);
+  --clay-dark: #112644;
+  --clay-dim: rgba(30, 58, 95, 0.08);
+  --error: var(--color-destructive);
+  --error-bg: #FEF2F2;
+  --error-border: #FCA5A5;
+  --sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font);
+  font-weight: 700;
+  color: var(--color-foreground);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.75rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.1rem; }
+
+p {
+  color: var(--color-muted-foreground);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color 200ms ease;
+  cursor: pointer;
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button, [role="button"], a, input[type="submit"], input[type="button"] {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Layout Containers */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-primary);
+  transition: background-color 200ms ease, border-color 200ms ease, transform 200ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #152B47;
+  border-color: #152B47;
+  color: var(--color-on-primary);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-card);
+  color: var(--color-foreground);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  transition: background-color 200ms ease, border-color 200ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-muted);
+  border-color: #94A3B8;
+  color: var(--color-foreground);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-accent);
+  transition: background-color 200ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-accent:hover {
+  background-color: #15803D;
+  border-color: #15803D;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-foreground);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  outline: none;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.15);
+}
+
+.form-input::placeholder, .form-textarea::placeholder {
+  color: var(--color-muted-foreground);
+  opacity: 0.7;
+}
+
+/* Card Component */
+.card-swiss {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.card-swiss:hover {
+  border-color: #94A3B8;
+  box-shadow: var(--shadow-md);
+}
+
+/* Accessibility - Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
