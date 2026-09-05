@@ -78,7 +78,8 @@ def get_embedding_model():
 
 def match_skills_rag(resume_skills, required_skills, preferred_skills=None, similarity_threshold=0.75):
     """
-    RAG & Embedding-based Skill Matcher.
+    High-Performance Lightweight RAG & Vector Skill Matcher.
+    Uses TF-IDF character n-gram cosine similarity & SequenceMatcher.
     
     Returns structured dict:
     {
@@ -94,7 +95,6 @@ def match_skills_rag(resume_skills, required_skills, preferred_skills=None, simi
         
     resume_skills_clean = [s.strip() for s in resume_skills if s and s.strip()]
     required_skills_clean = [s.strip() for s in required_skills if s and s.strip()]
-    preferred_skills_clean = [s.strip() for s in preferred_skills if s and s.strip()]
     
     if not required_skills_clean:
         return {
@@ -141,41 +141,56 @@ def match_skills_rag(resume_skills, required_skills, preferred_skills=None, simi
         if not found_exact:
             unmatched_jd_skills.append(jd_skill)
 
-    # STEP 2: LangChain / SentenceTransformers RAG Vector Embedding Matching
+    # STEP 2: Lightweight Vector & Sub-word N-Gram TF-IDF Matcher
     if unmatched_jd_skills:
-        model = get_embedding_model()
-        if model:
-            try:
-                # Embed all resume skills
-                resume_embeddings = model.encode(resume_skills_clean)
-                jd_embeddings = model.encode(unmatched_jd_skills)
-                
-                for i, jd_skill in enumerate(unmatched_jd_skills):
-                    jd_vec = jd_embeddings[i]
-                    best_score = -1.0
-                    best_match_skill = None
-                    
-                    for j, res_skill in enumerate(resume_skills_clean):
-                        res_vec = resume_embeddings[j]
-                        sim = compute_cosine_similarity(jd_vec, res_vec)
-                        if sim > best_score:
-                            best_score = sim
-                            best_match_skill = res_skill
-                            
-                    if best_match_skill and best_score >= similarity_threshold:
-                        semantic_matches.append({
-                            "jd_skill": jd_skill,
-                            "resume_skill": best_match_skill,
-                            "score": round(float(best_score), 3)
-                        })
-                    else:
-                        still_missing_skills.append(jd_skill)
-            except Exception as e:
-                print("=== RAG VECTOR MATCHING EXCEPTION ===", e)
-                model = False
+        import difflib
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.metrics.pairwise import cosine_similarity
 
-        if not model:
-            import difflib
+            # Build TF-IDF n-gram vector space
+            vectorizer = TfidfVectorizer(analyzer='char_wb', ngram_range=(2, 4))
+            corpus = resume_skills_clean + unmatched_jd_skills
+            tfidf_matrix = vectorizer.fit_transform([normalize_skill(s) for s in corpus])
+            
+            n_res = len(resume_skills_clean)
+            res_vectors = tfidf_matrix[:n_res]
+            jd_vectors = tfidf_matrix[n_res:]
+            
+            sim_matrix = cosine_similarity(jd_vectors, res_vectors)
+            
+            for i, jd_skill in enumerate(unmatched_jd_skills):
+                jd_norm = normalize_skill(jd_skill)
+                best_score = 0.0
+                best_match_skill = None
+                
+                for j, res_skill in enumerate(resume_skills_clean):
+                    res_norm = normalize_skill(res_skill)
+                    
+                    # Compute TF-IDF cosine score
+                    vec_score = float(sim_matrix[i, j])
+                    
+                    # Compute SequenceMatcher string similarity
+                    seq_score = difflib.SequenceMatcher(None, jd_norm, res_norm).ratio()
+                    
+                    # Combined semantic score
+                    combined_score = max(vec_score, seq_score)
+                    
+                    if combined_score > best_score:
+                        best_score = combined_score
+                        best_match_skill = res_skill
+                
+                if best_match_skill and best_score >= similarity_threshold:
+                    semantic_matches.append({
+                        "jd_skill": jd_skill,
+                        "resume_skill": best_match_skill,
+                        "score": round(float(best_score), 3)
+                    })
+                else:
+                    still_missing_skills.append(jd_skill)
+
+        except Exception as e:
+            # Fallback pure difflib string matcher if sklearn is unavailable
             for jd_skill in unmatched_jd_skills:
                 jd_norm = normalize_skill(jd_skill)
                 best_score = 0.0
@@ -186,7 +201,7 @@ def match_skills_rag(resume_skills, required_skills, preferred_skills=None, simi
                     if ratio > best_score:
                         best_score = ratio
                         best_match_skill = res_skill
-                if best_match_skill and best_score >= 0.80:
+                if best_match_skill and best_score >= similarity_threshold:
                     semantic_matches.append({
                         "jd_skill": jd_skill,
                         "resume_skill": best_match_skill,
@@ -210,3 +225,4 @@ def match_skills_rag(resume_skills, required_skills, preferred_skills=None, simi
         "semantic_score": semantic_score,
         "total_required": len(required_skills_clean)
     }
+

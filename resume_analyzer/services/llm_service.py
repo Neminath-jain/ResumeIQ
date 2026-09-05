@@ -23,10 +23,10 @@ DEFAULT_MODELS = [
     "groq/compound-mini",
     "groq/compound",
     "qwen/qwen3.6-27b",
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
 ]
 MODEL_CANDIDATES = [m for m in DEFAULT_MODELS if m]
+
 
 
 def call_groq_chat(client, messages, temperature=0.1, max_tokens=None):
@@ -37,6 +37,7 @@ def call_groq_chat(client, messages, temperature=0.1, max_tokens=None):
                 "model": model,
                 "messages": messages,
                 "temperature": temperature,
+                "timeout": 15.0,
             }
             if max_tokens:
                 kwargs["max_tokens"] = max_tokens
@@ -48,6 +49,7 @@ def call_groq_chat(client, messages, temperature=0.1, max_tokens=None):
     if last_error:
         raise last_error
     raise RuntimeError("No Groq models available")
+
 
 
 import re
