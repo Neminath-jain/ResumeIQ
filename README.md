@@ -49,63 +49,86 @@ Edit `.env` and add:
 GROQ_API_KEY=gsk_your_key_here
 ```
 
-### 6. Run migrations
+### 6. (Optional) Connect to Supabase PostgreSQL
+By default, the app runs on local SQLite. To connect to a cloud Supabase database:
+1. In Supabase Dashboard $\rightarrow$ **Project Settings** $\rightarrow$ **Database** $\rightarrow$ **Connection string (URI)**.
+2. Select **Session mode (Port 5432)** (recommended for Django migrations).
+3. Add to `.env`:
+   ```env
+   DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+   ```
+
+### 7. Run migrations
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 7. Start server
+### 8. Start server
 ```bash
 python manage.py runserver
 ```
 
-### 8. Open browser
+### 9. Open browser
 ```
 http://127.0.0.1:8000/
 ```
 
 ---
 
-## No Groq key? Still works!
-The app runs without any API key using built-in rule-based fallback.
-Skill extraction uses regex. Scoring uses TF-IDF cosine similarity.
+## ⚡ Smart Input: Full Job Description OR Target Role
+ResumeIQ accepts both:
+1. **Full Job Descriptions:** Pasted multi-paragraph job postings with explicit requirements.
+2. **Target Role Names:** Short job titles like *"Senior Full Stack Engineer"*, *"AI Developer"*, or *"Data Analyst"*. The engine intelligently infers standard industry-required skills, preferred tools, and typical experience so the candidate is accurately scored against the role.
 
 ---
 
-## ATS Score Formula
+## 🛡️ No Groq key? Still works!
+The app features resilient multi-layer fallbacks:
+- **Groq Outage / No Key:** Automated rule-based skill extraction (`skill_extractor.py`) using a 300+ technical skill catalog and regex pattern matching.
+- **Semantic Matching:** TF-IDF character n-gram cosine similarity and SequenceMatcher string distance.
+
+---
+
+## 📊 ATS Score Formula
 ```
-ATS Score = Keyword Match     x 0.40 (40%)
-          + Semantic Similarity x 0.30 (30%)
-          + Experience Match   x 0.20 (20%)
-          + Resume Quality     x 0.10 (10%)
+ATS Score = Keyword Match           x 0.35 (35%)
+          + RAG Semantic Similarity x 0.35 (35%)
+          + Experience Alignment    x 0.15 (15%)
+          + Resume Quality Audit    x 0.15 (15%)
 ```
 
 ---
 
-## API Example (curl)
+## 🔌 API Example (curl)
 ```bash
 curl -X POST http://127.0.0.1:8000/api/analyze/ \
   -F "resume_text=Python developer with 3 years Django, React, PostgreSQL..." \
-  -F "job_description=Looking for Django developer 2+ years experience..."
+  -F "job_description=Full Stack Engineer"
 ```
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 ```
 ai_resume_analyzer/
 ├── config/                    # Django settings, urls, wsgi
 ├── resume_analyzer/
 │   ├── services/
-│   │   ├── llm_service.py     # Groq API + mock fallback
-│   │   ├── pdf_extractor.py   # PDF text extraction
-│   │   └── scoring_engine.py  # Hybrid ATS scoring engine
+│   │   ├── llm_service.py         # Groq API client + JSON parser + role inference
+│   │   ├── pdf_extractor.py       # PyPDF2 text extraction layer
+│   │   ├── rag_skill_matcher.py   # Vector cosine similarity + skill variant decomposition
+│   │   ├── scoring_engine.py      # 4-factor hybrid ATS scoring engine
+│   │   ├── skill_extractor.py     # Rule-based fallback extractor (300+ skills catalog)
+│   │   └── career_ai_engine.py    # Career intelligence, gaps, and roadmap generator
+│   ├── tests/
+│   │   └── test_rag_skill_matcher.py # Unit test suite
 │   ├── models.py
 │   ├── views.py
 │   ├── serializers.py
 │   └── urls.py
-├── templates/                 # HTML templates
+├── templates/                 # Modern HTML templates
+├── docs/                      # Comprehensive engineering specifications
 ├── .env.example
 ├── requirements.txt
 └── manage.py
@@ -113,12 +136,13 @@ ai_resume_analyzer/
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 | Layer | Technology |
-|-------|-----------|
-| Backend | Django 4.2, DRF |
-| AI/LLM | Groq API (Llama 3-8b) - FREE |
-| Semantic Scoring | scikit-learn TF-IDF |
-| PDF Parsing | PyPDF2 |
-| Database | SQLite (dev) |
-| Frontend | Django Templates + Vanilla JS |
+|---|---|
+| **Backend** | Django 4.2 LTS, Django REST Framework |
+| **AI / LLM** | Groq API (Llama 3.3 70B, Qwen 3.6 27B) |
+| **Vector & RAG** | SentenceTransformers (`all-MiniLM-L6-v2`), scikit-learn TF-IDF |
+| **PDF Parsing** | PyPDF2 (binary stream text extractor) |
+| **Database** | PostgreSQL (Supabase / Production) / SQLite (Local) |
+| **Frontend** | Django Templates, Vanilla JS (ES6+), Modern Responsive CSS |
+

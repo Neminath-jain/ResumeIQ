@@ -62,14 +62,15 @@ The application uses an editorial, warm palette combining rich terracotta (`--cl
 
 ### 2.1 Hero & Upload Area (`index.html`)
 * **Dual Input Layout:** Supports PDF File Upload (with drag-and-drop boundary) or Direct Text Paste.
-* **Target Job Description Field:** High-contrast textarea with active focus borders in terracotta (`--clay`).
+* **Target Job Description / Role Field:** High-contrast textarea with active focus borders in terracotta (`--clay`), supporting both detailed job descriptions and short target role titles with clear placeholder guidance.
 * **Submit CTA Button:** Elevated glass button with hover scale micro-animations (`transform: translateY(-2px)`).
 
 ### 2.2 Results Dashboard (`result.html`)
 * **Overall Match Gauge:** Interactive SVG radial ring chart displaying overall ATS score (0-100%) with dynamic stroke color interpolation.
-* **Sub-Score Cards:** Grid breakdown of Keyword Match (40%), Semantic Match (30%), Experience Alignment (20%), and Resume Quality (10%).
+* **Sub-Score Cards:** Grid breakdown of Keyword Match (35%), Semantic Match (35%), Experience Alignment (15%), and Resume Quality (15%).
 * **Skill Badges:** Categorized visual pills for Matched (Green) and Missing (Red/Yellow) skills.
 * **Floating AI Chatbot Widget:** Floating drawer accessible across all pages with context-aware resume query capabilities (`window.RESUME_CONTEXT`).
 
 ### 2.3 Analysis History (`history.html`)
-* **Analysis Table:** Clean editorial table listing past runs, job titles, scores, and date timestamps.
+* **Analysis Table:** Clean Swiss/editorial table listing past runs, target role, status pills, ATS score bars, and date timestamps.
+

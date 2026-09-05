@@ -102,28 +102,24 @@ Existing public tools present critical limitations:
 ### Feature 2: LLM Structured Entity Extraction
 * **Description:** Process raw unstructured resume and JD texts into standardized JSON objects using high-speed LLMs (Groq API).
 * **Functional Requirements:**
-  * **Extracted Resume Entity Schema:** `technical_skills`, `soft_skills`, `years_of_experience`, `education`, `projects`, `quantified_metrics_count`, `has_contact_info`.
-  * **Extracted JD Entity Schema:** `job_title`, `required_skills`, `preferred_skills`, `required_experience_years`, `key_responsibilities`.
-  * Automatic multi-model failover rotation (`groq/compound-mini`, `qwen/qwen3.6-27b`, `openai/gpt-oss-120b`).
+  * **Extracted Resume Entity Schema:** `technical_skills`, `years_experience`, `education`, `projects`, `quantified_achievements`.
+  * **Extracted JD / Role Entity Schema:** `required_skills`, `preferred_skills`, `experience_required`.
+  * **Role Inference:** When a target role title is provided (e.g. *"Full Stack Engineer"*, *"Data Analyst"*), automatically infers 8–12 standard industry-required skills, preferred tools, and experience expectations.
+  * **Offline Resilience:** Rule-based fallback skill extractor (`skill_extractor.py`) with 300+ skills catalog.
 
 ### Feature 3: Multi-Factor Hybrid ATS Scoring Engine
 * **Description:** Calculate an overall ATS match score (0–100%) using a deterministic, weighted multi-metric formula:
-$$\text{ATS Score} = (S_{\text{keyword}} \times 0.40) + (S_{\text{semantic}} \times 0.30) + (S_{\text{experience}} \times 0.20) + (S_{\text{quality}} \times 0.10)$$
+$$\text{ATS Score} = (S_{\text{keyword}} \times 0.35) + (S_{\text{semantic}} \times 0.35) + (S_{\text{experience}} \times 0.15) + (S_{\text{quality}} \times 0.15)$$
 
 * **Sub-Metric Breakdown:**
-  1. **Keyword Overlap Score ($S_{\text{keyword}}$ - 40% Weight):**
-     $$\text{Overlap Ratio} = \frac{|\text{Resume Skills} \cap \text{Required JD Skills}|}{|\text{Required JD Skills}|} \times 100$$
-  2. **Semantic / Related-Skill Score ($S_{\text{semantic}}$ - 30% Weight):**
-     Calculates TF-IDF n-gram vector Cosine Similarity combined with LLM/RAG vector embedding context to evaluate related skills (e.g. PyTorch ~ TensorFlow).
-  3. **Experience Alignment Score ($S_{\text{experience}}$ - 20% Weight):**
-     Compares candidate total years of experience ($E_{\text{cand}}$) against JD requirement ($E_{\text{req}}$):
-     $$S_{\text{experience}} = \min\left(100, \frac{E_{\text{cand}}}{E_{\text{req}}} \times 100\right)$$
-  4. **Resume Quality Score ($S_{\text{quality}}$ - 10% Weight):**
-     Evaluates resume completeness and impact:
-     * Presence of quantified metrics / numbers (+30 points)
-     * Documented projects (+30 points)
-     * Education listing (+20 points)
-     * Valid contact details (+20 points)
+  1. **Keyword Overlap Score ($S_{\text{keyword}}$ - 35% Weight):**
+     Matches exact skills, bidirectional aliases (`TECH_ALIASES`), and decomposed variants (`get_skill_variants`) against resume skills and raw resume text.
+  2. **Semantic / Related-Skill Score ($S_{\text{semantic}}$ - 35% Weight):**
+     Calculates SentenceTransformer dense vector Cosine Similarity combined with TF-IDF character n-gram cosine similarity (threshold $\ge 0.75$).
+  3. **Experience Alignment Score ($S_{\text{experience}}$ - 15% Weight):**
+     Compares candidate total years of experience against JD / role requirement using tiered brackets.
+  4. **Resume Quality Score ($S_{\text{quality}}$ - 15% Weight):**
+     Evaluates resume completeness and impact (base 40 points, quantified achievements up to +30, projects up to +15, education +10, numbers/metrics in bullets up to +15).
 
 ### Feature 4: Explainable Career Intelligence Engine
 * **Description:** Transform raw metric gaps into actionable, strategic advice for candidate growth.
@@ -131,7 +127,7 @@ $$\text{ATS Score} = (S_{\text{keyword}} \times 0.40) + (S_{\text{semantic}} \ti
   * **Critical Skill Gaps:** Identify missing skills from mandatory JD requirements that significantly penalize the ATS score.
   * **Advanced Skill Gaps:** Highlight missing preferred or secondary technologies that provide competitive differentiation.
   * **Resume Weakness Audit:** Highlight structural flaws (e.g., missing metrics in bullet points, passive phrasing, missing contact links).
-  * **Sequential Career Roadmap:** Generate a 5-step prioritized action plan (e.g. Step 1: Learn Missing Core Skill, Step 2: Build Hands-on Project, Step 3: Quantify Achievements).
+  * **Sequential Career Roadmap:** Generate a 5-step prioritized action plan.
   * **Personalized Advice:** Produce role-tailored strategic recommendations.
 
 ### Feature 5: Interactive Results Dashboard & Analysis History
@@ -139,8 +135,8 @@ $$\text{ATS Score} = (S_{\text{keyword}} \times 0.40) + (S_{\text{semantic}} \ti
 * **Functional Requirements:**
   * Display overall score with dynamic SVG progress gauges and color-coded status badges (High Match ≥ 75%, Moderate 50–74%, Low < 50%).
   * Provide visual pill badges for matched vs missing skills.
-  * Persist analysis records to database (`ResumeAnalysis` ORM model) with full detail view retrieval at `/analysis/<id>/`.
-  * Offer historical lookup page (`/history/`) displaying past analyses with timestamps and target job titles.
+  * Persist analysis records to database (`ResumeAnalysis` ORM model, supporting Supabase PostgreSQL and SQLite) with full detail view retrieval at `/result/<id>/`.
+  * Offer historical lookup page (`/history/`) displaying past analyses with timestamps, target roles, status, and scores.
 
 ---
 

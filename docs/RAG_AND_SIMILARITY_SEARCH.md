@@ -9,9 +9,11 @@ This document details the Retrieval-Augmented Generation (RAG), Vector Embedding
 ## 1. Executive Summary
 
 The project implements a hybrid skill matching architecture that goes beyond traditional naive keyword string comparison:
-1. **Exact & Alias Matching:** Instant exact match and acronym resolution (e.g. `k8s` → `kubernetes`, `ml` → `machine learning`).
-2. **Dense Vector Embeddings & Similarity Search:** Uses `sentence-transformers` (`all-MiniLM-L6-v2`) to convert resume skills and job requirements into 384-dimensional dense vector embeddings and computes **Cosine Similarity**.
-3. **Retrieval-Augmented Generation (RAG):** Synthesizes exact matches, semantically paired skills, and remaining missing skills into a retrieved context payload, which is injected directly into the LLM prompt context to guide explainable career intelligence generation.
+1. **Role Inference & Extraction:** Supports detailed job descriptions and short target role titles (e.g., *"Full Stack Engineer"*, *"Data Analyst"*), automatically inferring 8–12 standard required skills, preferred tools, and experience levels.
+2. **Compound Skill Variant Decomposition (`get_skill_variants`):** Decomposes complex skill phrases, parentheses, and conjunctions (e.g. `SQL (PostgreSQL, MySQL)` $\rightarrow$ `sql`, `postgresql`, `mysql`; `TensorFlow or PyTorch` $\rightarrow$ `tensorflow`, `pytorch`).
+3. **Bidirectional Technology Aliases (`TECH_ALIASES`):** Resolves bidirectional acronyms and synonyms (e.g. `k8s` $\leftrightarrow$ `kubernetes`, `ml` $\leftrightarrow$ `machine learning`, `reactjs` / `react.js` $\leftrightarrow$ `react`, `golang` $\leftrightarrow$ `go`, `aws` $\leftrightarrow$ `amazon web services`).
+4. **Dense Vector Embeddings & Similarity Search:** Uses `sentence-transformers` (`all-MiniLM-L6-v2`) and TF-IDF character n-gram cosine similarity to pair related skills with a $\ge 0.75$ similarity threshold.
+5. **Retrieval-Augmented Generation (RAG):** Synthesizes exact matches, semantically paired skills, and remaining missing skills into a retrieved context payload, which is injected directly into the LLM prompt context to guide explainable career intelligence generation.
 
 ---
 
@@ -21,15 +23,15 @@ The project implements a hybrid skill matching architecture that goes beyond tra
 flowchart TD
     subgraph Input Parsing
         RS["Resume Extracted Skills"]
-        JDS["Job Description Required Skills"]
+        JDS["JD / Inferred Role Skills"]
     end
 
-    subgraph Step 1: Exact & Alias Filter
-        EA["check_exact_or_alias()"]
-        RS --> EA
-        JDS --> EA
-        EA -->|"Matched Skills (Score: 1.0)"| EXACT["exact_matches"]
-        EA -->|"Unmatched JD Skills"| UNMATCHED["unmatched_jd_skills"]
+    subgraph Step 1: Exact, Variant & Alias Filter
+        VAR["get_skill_variants() & check_exact_or_alias()"]
+        RS --> VAR
+        JDS --> VAR
+        VAR -->|"Matched Skills (Score: 1.0)"| EXACT["exact_matches"]
+        VAR -->|"Unmatched JD Skills"| UNMATCHED["unmatched_jd_skills"]
     end
 
     subgraph Step 2: Vector Embedding & Similarity Search

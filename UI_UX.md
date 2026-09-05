@@ -104,11 +104,11 @@ flowchart LR
 │   Upload your resume and target job description to get an instant match.    │
 │                                                                             │
 │ ┌──────────────────────────────────────┐ ┌────────────────────────────────┐ │
-│ │ Candidate Resume                     │ │ Target Job Description         │ │
+│ │ Candidate Resume                     │ │ Target Job Description / Role  │ │
 │ │ ┌──────────────────────────────────┐ │ │ ┌────────────────────────────┐ │ │
-│ │ │ [ Upload PDF ]  [ Paste Text ]   │ │ │ │ Paste full job description │ │ │
-│ │ └──────────────────────────────────┘ │ │ │ requirements here...       │ │ │
-│ │ Drag & drop resume.pdf (Max 5MB)   │ │ │ │ (Minimum 100 characters)   │ │ │
+│ │ │ [ Upload PDF ]  [ Paste Text ]   │ │ │ │ Paste job description OR   │ │ │
+│ │ └──────────────────────────────────┘ │ │ │ enter target role name...   │ │ │
+│ │ Drag & drop resume.pdf (Max 5MB)   │ │ │ │ (e.g. Full Stack Engineer) │ │ │
 │ └──────────────────────────────────────┘ └────────────────────────────────┘ │
 │                                                                             │
 │                      [  ⚡ Calculate ATS Match Score  ]                      │
@@ -119,7 +119,7 @@ flowchart LR
 #### Key Components:
 1. **Input Mode Switcher:** Tabbed selector toggling between `.pdf` File Upload and Raw Text Area.
 2. **File Dropzone:** Drag-and-drop file target displaying uploaded filename, size, and file removal button.
-3. **Job Description Textarea:** Expandable text field with character count meter.
+3. **Job Description / Role Textarea:** Flexible text field accepting either a complete job description or target role name with automated skill inference.
 4. **Primary Action Button:** Full-width gradient button with micro-hover uplift effect (`transform: translateY(-1px)`).
 
 ---
@@ -135,7 +135,7 @@ flowchart LR
 │                                                                             │
 │ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ │
 │ │ Keyword Score │ │ Semantic Score│ │ Experience    │ │ Resume Quality│ │
-│ │   80% (40%)   │ │   75% (30%)   │ │   85% (20%)   │ │   70% (10%)   │ │
+│ │   80% (35%)   │ │   75% (35%)   │ │   85% (15%)   │ │   70% (15%)   │ │
 │ └───────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ │
 │                                                                             │
 │ ┌───────────────────────────────────┐ ┌───────────────────────────────────┐ │

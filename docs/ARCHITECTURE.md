@@ -98,22 +98,33 @@ flowchart TD
 
 ### 4.2 LLM Entity Extraction Subsystem ([`llm_service.py`](file:///c:/Users/parshwanath/OneDrive/Documents/GITHUB-PROJECTS/ai_resume_analyzer/resume_analyzer/services/llm_service.py))
 * **Responsibility:** Convert unstructured resume text and JD text into strongly typed JSON structures.
-* **Mechanism:** Formulates prompt templates enforcing JSON output. Features multi-model failover rotation across Groq models.
+* **Mechanism:** 
+  * Formulates prompt templates enforcing JSON output with atomic skill breakdown.
+  * **Role Inference:** If the user inputs a short job title/role (e.g. *"Full Stack Engineer"*, *"AI Developer"*, *"Data Analyst"*), the parser automatically infers 8–12 standard industry-required skills, preferred skills, and expected experience.
+  * Features multi-model failover rotation across Groq models and resilient fallback to `skill_extractor.py`.
 
 ### 4.3 RAG & Embedding Skill Matcher Subsystem ([`rag_skill_matcher.py`](file:///c:/Users/parshwanath/OneDrive/Documents/GITHUB-PROJECTS/ai_resume_analyzer/resume_analyzer/services/rag_skill_matcher.py))
-* **Responsibility:** Vector embedding generation and cosine similarity matching.
-* **Mechanism:** Generates dense 384-dimensional vectors via `SentenceTransformer('all-MiniLM-L6-v2')`, computes cosine similarity between candidate skills and unmatched job skills, and filters by similarity threshold ($\ge 0.75$).
+* **Responsibility:** Vector embedding generation, compound skill decomposition, and cosine similarity matching.
+* **Mechanism:** 
+  * **Variant Decomposition (`get_skill_variants`):** Decomposes compound skills, parentheses, and conjunctions (e.g., `SQL (PostgreSQL, MySQL)` $\rightarrow$ `sql`, `postgresql`, `mysql`; `TensorFlow or PyTorch` $\rightarrow$ `tensorflow`, `pytorch`).
+  * **Technology Aliases:** Expanded bidirectional dictionary (`TECH_ALIASES`) mapping synonyms (React, Node, Postgres, Kubernetes, Golang, AWS, GCP, CI/CD, Vector DBs).
+  * Generates dense 384-dimensional vectors via `SentenceTransformer('all-MiniLM-L6-v2')` and computes cosine similarity with a $\ge 0.75$ threshold filter.
 
 ### 4.4 Hybrid ATS Scoring Subsystem ([`scoring_engine.py`](file:///c:/Users/parshwanath/OneDrive/Documents/GITHUB-PROJECTS/ai_resume_analyzer/resume_analyzer/services/scoring_engine.py))
-* **Responsibility:** Calculate the 4-part weighted ATS score.
+* **Responsibility:** Calculate the 4-factor weighted ATS score.
 * **Formulas:**
-  1. **Keyword Overlap ($S_{\text{keyword}}$ - 40%):** Exact skill set intersection.
-  2. **Semantic Similarity / RAG ($S_{\text{semantic}}$ - 30%):** Vector embedding similarity match score combined with TF-IDF vector similarity.
-  3. **Experience Score ($S_{\text{experience}}$ - 20%):** Ratio of candidate experience to target requirement.
-  4. **Quality Score ($S_{\text{quality}}$ - 10%):** Checks for metrics/numbers, projects, education, contact info.
+  $$\text{ATS Score} = (S_{\text{keyword}} \times 0.35) + (S_{\text{semantic}} \times 0.35) + (S_{\text{experience}} \times 0.15) + (S_{\text{quality}} \times 0.15)$$
+  1. **Keyword Match ($S_{\text{keyword}}$ - 35%):** Exact and alias skill set intersection including variant matching against full resume text.
+  2. **Semantic Similarity / RAG ($S_{\text{semantic}}$ - 35%):** Dense vector embedding similarity match score combined with TF-IDF character n-gram cosine similarity.
+  3. **Experience Score ($S_{\text{experience}}$ - 15%):** Evaluates candidate years of experience against target requirements.
+  4. **Quality Score ($S_{\text{quality}}$ - 15%):** Audits quantified achievements, projects, education, and metrics in bullet points.
 
 ### 4.5 AI Career Intelligence Subsystem ([`career_ai_engine.py`](file:///c:/Users/parshwanath/OneDrive/Documents/GITHUB-PROJECTS/ai_resume_analyzer/resume_analyzer/services/career_ai_engine.py))
-* **Responsibility:** Generate explainable feedback components with RAG context injection.
+* **Responsibility:** Generate explainable feedback components with RAG context injection (Critical Gaps, Advanced Gaps, Resume Weaknesses, Career Roadmap, and Strategic Advice).
+
+### 4.6 Rule-Based Fallback Skill Extractor ([`skill_extractor.py`](file:///c:/Users/parshwanath/OneDrive/Documents/GITHUB-PROJECTS/ai_resume_analyzer/resume_analyzer/services/skill_extractor.py))
+* **Responsibility:** Offline and zero-downtime fallback skill extraction.
+* **Mechanism:** Maintains a comprehensive catalog of 300+ technical skills (languages, frameworks, databases, cloud, DevOps, AI/ML, testing) and role-to-skills template mapping using word-boundary regex matching.
 
 ---
 

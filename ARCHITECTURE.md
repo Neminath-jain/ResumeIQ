@@ -102,24 +102,36 @@ flowchart TD
 
 ### 4.2 LLM Entity Extraction Subsystem (`llm_service.py`)
 * **Responsibility:** Convert unstructured resume text and JD text into strongly typed JSON structures.
-* **Mechanism:** Formulates prompt templates enforcing Pydantic-like JSON output. Features multi-model failover rotation:
-  $$\text{Model Chain: } \texttt{groq/compound-mini} \longrightarrow \texttt{qwen/qwen3.6-27b} \longrightarrow \texttt{openai/gpt-oss-120b}$$
+* **Mechanism:** 
+  * Formulates prompt templates enforcing structured JSON output with atomic skill breakdown.
+  * **Role Inference:** If the user provides a short target role title (e.g. *"Full Stack Engineer"*, *"AI Developer"*, *"Data Analyst"*), automatically infers 8–12 standard industry-required skills, preferred tools, and typical experience.
+  * Features multi-model failover rotation across Groq models and resilient fallback to `skill_extractor.py`.
 
-### 4.3 Hybrid ATS Scoring Subsystem (`scoring_engine.py`)
+### 4.3 RAG & Embedding Skill Matcher Subsystem (`rag_skill_matcher.py`)
+* **Responsibility:** Vector embedding generation, compound skill decomposition, and cosine similarity matching.
+* **Mechanism:** 
+  * **Variant Decomposition (`get_skill_variants`):** Decomposes compound skills, parentheses, and conjunctions (e.g., `SQL (PostgreSQL, MySQL)` $\rightarrow$ `sql`, `postgresql`, `mysql`; `TensorFlow or PyTorch` $\rightarrow$ `tensorflow`, `pytorch`).
+  * **Technology Aliases:** Expanded bidirectional dictionary (`TECH_ALIASES`) mapping synonyms (React, Node, Postgres, Kubernetes, Golang, AWS, GCP, CI/CD, Vector DBs).
+  * Generates dense 384-dimensional vectors via `SentenceTransformer('all-MiniLM-L6-v2')` and computes cosine similarity with a $\ge 0.75$ threshold filter.
+
+### 4.4 Hybrid ATS Scoring Subsystem (`scoring_engine.py`)
 * **Responsibility:** Calculate the 4-part weighted ATS score.
 * **Formulas:**
-  1. **Keyword Overlap ($S_{\text{keyword}}$ - 40%):** Exact skill set intersection.
-  2. **Semantic Similarity ($S_{\text{semantic}}$ - 30%):** TF-IDF n-gram vectorization and Cosine Similarity:
-     $$\text{Cosine Similarity}(\vec{A}, \vec{B}) = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|}$$
-  3. **Experience Score ($S_{\text{experience}}$ - 20%):** Ratio of candidate experience to target requirement.
-  4. **Quality Score ($S_{\text{quality}}$ - 10%):** Checks for metrics/numbers, projects, education, contact info.
+  $$\text{ATS Score} = (S_{\text{keyword}} \times 0.35) + (S_{\text{semantic}} \times 0.35) + (S_{\text{experience}} \times 0.15) + (S_{\text{quality}} \times 0.15)$$
+  1. **Keyword Overlap ($S_{\text{keyword}}$ - 35%):** Exact and alias skill set intersection including variant matching against full resume text.
+  2. **Semantic Similarity / RAG ($S_{\text{semantic}}$ - 35%):** Vector embedding similarity match score combined with TF-IDF character n-gram cosine similarity.
+  3. **Experience Score ($S_{\text{experience}}$ - 15%):** Ratio of candidate experience to target requirement using tiered evaluation brackets.
+  4. **Quality Score ($S_{\text{quality}}$ - 15%):** Evaluates metrics/numbers, projects, education, and bullet point quality.
 
-### 4.4 AI Career Intelligence Subsystem (`career_ai_engine.py`)
-* **Responsibility:** Generate explainable feedback components.
-* **Outputs:** Critical Skill Gaps, Advanced Skill Gaps, Resume Weaknesses, 5-Step Sequential Roadmap, Personalized Advice.
+### 4.5 AI Career Intelligence Subsystem (`career_ai_engine.py`)
+* **Responsibility:** Generate explainable feedback components with RAG context injection (Critical Gaps, Advanced Gaps, Resume Weaknesses, 5-Step Sequential Roadmap, Personalized Advice).
 
-### 4.5 Persistence & Reporting Subsystem (`models.py`, `views.py`)
-* **Responsibility:** Save analysis results to the database (`ResumeAnalysis` ORM model) and render interactive dashboards.
+### 4.6 Rule-Based Fallback Skill Extractor (`skill_extractor.py`)
+* **Responsibility:** Zero-downtime offline fallback skill extraction.
+* **Mechanism:** Maintains a comprehensive catalog of 300+ technical skills and role-to-skills template mapping using word-boundary regex matching.
+
+### 4.7 Persistence & Reporting Subsystem (`models.py`, `views.py`)
+* **Responsibility:** Save analysis results to PostgreSQL (Supabase / Production) or SQLite (Local) via `ResumeAnalysis` ORM model and render responsive dashboards.
 
 ---
 
