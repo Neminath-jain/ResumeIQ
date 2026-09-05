@@ -86,3 +86,101 @@ The system enforces Role-Based Access Control (RBAC) across two distinct primary
 * **FR-UI-003:** The system SHALL save every analysis event to the `ResumeAnalysis` model and provide a permanent retrieval endpoint at `/result/<id>/`.
 * **FR-UI-004:** The system SHALL provide a `/history/` dashboard displaying a tabular summary of past analyses with date, candidate role, status, and score.
 * **FR-UI-005:** The system SHALL connect to Supabase PostgreSQL database via `DATABASE_URL` with SSL support and connection pooling.
+
+---
+
+## 5. Data Requirements & Database Schema
+
+### 5.1 Database Entity: `ResumeAnalysis` (`resume_analyzer_resumeanalysis`)
+
+| Field Name | Data Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `BigAutoField` | Primary Key, Auto Increment | Unique analysis identifier. |
+| `user_id` | `ForeignKey` | FK $\rightarrow$ `auth_user.id`, CASCADE | Owner of the analysis record. |
+| `resume_file` | `FileField` | Upload path `resumes/`, Nullable | Uploaded PDF binary file path. |
+| `resume_text` | `TextField` | Blank Allowed | Extracted/pasted raw resume text. |
+| `job_description` | `TextField` | NOT NULL | Target job description text. |
+| `status` | `CharField(20)` | Choices: `pending`, `processing`, `completed`, `failed` | Workflow status. |
+| `ats_score` | `FloatField` | Nullable, $0.0 \le x \le 100.0$ | Overall weighted ATS match score. |
+| `keyword_score` | `FloatField` | Nullable, $0.0 \le x \le 100.0$ | Sub-score: Keyword overlap. |
+| `semantic_score` | `FloatField` | Nullable, $0.0 \le x \le 100.0$ | Sub-score: Semantic similarity. |
+| `experience_score` | `FloatField` | Nullable, $0.0 \le x \le 100.0$ | Sub-score: Experience alignment. |
+| `quality_score` | `FloatField` | Nullable, $0.0 \le x \le 100.0$ | Sub-score: Resume structural quality. |
+| `detected_role` | `CharField(200)`| Blank Allowed | Role detected by LLM. |
+| `experience_level` | `CharField(100)`| Blank Allowed | Seniority level detected. |
+| `critical_skill_gaps_json` | `TextField` | Default `[]` | JSON array of missing critical skills. |
+| `advanced_skill_gaps_json` | `TextField` | Default `[]` | JSON array of missing advanced skills. |
+| `resume_weaknesses_json` | `TextField` | Default `[]` | JSON array of detected weaknesses. |
+| `career_roadmap_json` | `TextField` | Default `[]` | JSON array of 5-step roadmap items. |
+| `personalized_advice` | `TextField` | Blank Allowed | Strategic recommendations text. |
+| `skill_match_breakdown_json`| `TextField` | Default `{}` | JSON map of exact/semantic skill matches. |
+| `created_at` | `DateTimeField` | Auto Now Add | Timestamp of analysis creation. |
+| `updated_at` | `DateTimeField` | Auto Now | Timestamp of last modification. |
+
+---
+
+## 6. Input Validations & Sanitization
+
+| Field / Parameter | Validation Rule | Error Action |
+| :--- | :--- | :--- |
+| `resume_file` | File extension MUST be `.pdf`. File size MUST be $\le 5\text{MB}$. | Reject submission with HTTP 400: *"Invalid file type or file exceeds 5MB limit."* |
+| `resume_text` | Minimum length $\ge 100$ characters after whitespace trimming. | Reject submission with HTTP 400: *"Resume text too short."* |
+| `job_description` | Minimum length $\ge 100$ characters after whitespace trimming. | Reject submission with HTTP 400: *"Job Description text too short."* |
+| Input Text Sanitization | Strip HTML tags, script elements, and invalid UTF-8 byte sequences. | Sanitize input before processing. |
+
+---
+
+## 7. Authentication, Authorization & Security
+
+### 7.1 Authentication & Session Management
+* Web UI uses Django standard session authentication with secure HTTP-only session cookies.
+* API endpoints (`/api/analyze/`) require active user session or DRF Token Header (`Authorization: Token <key>`).
+
+### 7.2 Security Requirements (SEC)
+* **SEC-001 (Secret Protection):** All sensitive keys (`GROQ_API_KEY`, `SECRET_KEY`, `DATABASE_URL`) MUST be loaded strictly via environment variables using `python-dotenv`.
+* **SEC-002 (CSRF Defense):** All state-changing HTML form submissions MUST include valid Django CSRF tokens (`{% csrf_token %}`).
+* **SEC-003 (File Security):** Uploaded PDF files MUST be stored in dedicated media directories (`/media/resumes/`) with executable flags disabled.
+* **SEC-004 (SQL Injection & XSS Defense):** Queries MUST use Django ORM parameterized statements; UI outputs MUST escape HTML entities.
+
+---
+
+## 8. Error Handling & Edge Cases
+
+| Scenario / Edge Case | System Behavior & Mitigation |
+| :--- | :--- |
+| **Scanned Image PDF (No Text Layer)** | `PyPDF2` returns empty text string. System detects `len(text) < 100` and displays inline alert: *"Scanned PDF detected without text layer. Please paste raw resume text."* |
+| **Groq API Rate Limit (HTTP 429)** | System catches rate limit exception, logs warning, automatically rotates to secondary LLM model, or invokes rule-based extractor fallback. |
+| **Malformed LLM JSON Response** | Regex parser extracts valid JSON substring; if parsing fails completely, system populates default structured fallbacks. |
+| **Missing DB Connection** | System catches database exception and returns HTTP 503 with user-friendly retry message. |
+
+---
+
+## 9. Performance & Non-Functional Requirements (NFR)
+
+* **NFR-PERF-001 (Response Time):** Analysis endpoint `/api/analyze/` MUST return complete JSON response within **< 4.0 seconds** for standard resumes.
+* **NFR-RELI-002 (Availability):** System MUST achieve **99.5% uptime** excluding scheduled maintenance windows.
+* **NFR-SCAL-003 (Concurrency):** System backend SHALL support at least 50 concurrent analysis requests without memory overflow.
+* **NFR-COMP-004 (Browser Compatibility):** Web templates MUST render accurately on Chrome, Firefox, Edge, and Safari (desktop & mobile viewpoints).
+
+---
+
+## 10. Acceptance Criteria & Test Matrix
+
+```
+  Test Case ID    Requirement ID     Test Scenario                        Expected Result
+ ──────────────  ────────────────  ───────────────────────────────────  ────────────────────────────────────
+  TC-ING-01       FR-ING-001        Upload 6MB PDF file                  HTTP 400 Validation Error returned
+  TC-ING-02       FR-ING-002        Upload standard 2-page PDF           Text successfully extracted
+  TC-SCR-01       FR-SCR-001        Resume skills match 4 of 5 JD skills Keyword score = 80.0%
+  TC-SCR-02       BR-001            Verify hybrid ATS formula            Overall score equals weighted sum
+  TC-INT-01       FR-INT-001        Verify skill gap categorization      Gaps split into Critical & Advanced
+  TC-ERR-01       SEC-001           Simulate Groq API timeout            Auto-failover to secondary model
+```
+
+### Detailed Verification Criteria:
+1. **TC-ING-01:** Verifies file size limit enforcement at 5MB.
+2. **TC-ING-02:** Verifies text layer extraction via `PyPDF2`.
+3. **TC-SCR-01:** Verifies exact keyword score calculation accuracy ($4/5 = 80\%$).
+4. **TC-SCR-02:** Verifies overall score matches $(40\% \cdot S_{\text{kw}}) + (30\% \cdot S_{\text{sem}}) + (20\% \cdot S_{\text{exp}}) + (10\% \cdot S_{\text{qual}})$.
+5. **TC-INT-01:** Verifies JSON payload structures for critical vs advanced skill gaps.
+6. **TC-ERR-01:** Verifies failover mechanism when primary Groq model fails.
