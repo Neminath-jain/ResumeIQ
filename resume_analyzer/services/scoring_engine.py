@@ -1,20 +1,24 @@
 import re
-from .rag_skill_matcher import match_skills_rag, check_exact_or_alias, normalize_skill
+from .rag_skill_matcher import match_skills_rag, check_exact_or_alias, normalize_skill, get_skill_variants
 
 
 def is_skill_present(skill, resume_skills_norm, resume_text):
-    skill_norm = normalize_skill(skill)
-    # Check in extracted resume skills list using exact/alias matcher
-    for r_norm in resume_skills_norm:
-        if check_exact_or_alias(skill_norm, r_norm):
+    variants = get_skill_variants(skill)
+    resume_text_lower = resume_text.lower()
+
+    # 1. Check in extracted resume skills list using exact/alias matcher
+    for v in variants:
+        for r_norm in resume_skills_norm:
+            if check_exact_or_alias(v, r_norm):
+                return True
+
+    # 2. Check each variant in full resume text using word boundary regex
+    for v in variants:
+        escaped = re.escape(v)
+        pattern = r'(?i)\b' + escaped + r'\b'
+        if re.search(pattern, resume_text_lower):
             return True
-    
-    # Check in full resume text using word boundary regex
-    escaped = re.escape(skill_norm)
-    pattern = r'(?i)\b' + escaped + r'\b'
-    if re.search(pattern, resume_text):
-        return True
-        
+
     return False
 
 

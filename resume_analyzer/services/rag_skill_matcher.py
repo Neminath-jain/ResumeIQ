@@ -1,3 +1,4 @@
+import re
 import math
 
 
@@ -13,29 +14,76 @@ def compute_cosine_similarity(vec1, vec2):
         return 0.0
 
 
-# Known tech acronym / abbreviation mapping for exact aliases
+# Known tech acronym / abbreviation mapping for exact aliases (normalized lowercase)
 TECH_ALIASES = {
     "ml": "machine learning",
+    "machine learning": "machine learning",
     "ai": "artificial intelligence",
+    "artificial intelligence": "artificial intelligence",
     "dl": "deep learning",
+    "deep learning": "deep learning",
     "nlp": "natural language processing",
+    "natural language processing": "natural language processing",
     "cv": "computer vision",
+    "computer vision": "computer vision",
+    "llm": "large language models",
+    "llms": "large language models",
+    "large language models": "large language models",
+    "rag": "retrieval augmented generation",
+    "retrieval augmented generation": "retrieval augmented generation",
     "js": "javascript",
+    "javascript": "javascript",
     "ts": "typescript",
+    "typescript": "typescript",
     "py": "python",
+    "python": "python",
     "postgres": "postgresql",
+    "postgresql": "postgresql",
     "mongo": "mongodb",
+    "mongodb": "mongodb",
     "k8s": "kubernetes",
+    "kubernetes": "kubernetes",
+    "react": "react",
     "reactjs": "react",
     "react.js": "react",
+    "vue": "vue",
     "vuejs": "vue",
     "vue.js": "vue",
+    "next": "next.js",
     "nextjs": "next.js",
+    "next.js": "next.js",
+    "node": "node.js",
     "nodejs": "node.js",
+    "node.js": "node.js",
+    "express": "express.js",
     "expressjs": "express.js",
+    "express.js": "express.js",
     "gcp": "google cloud platform",
+    "google cloud": "google cloud platform",
+    "google cloud platform": "google cloud platform",
     "aws": "amazon web services",
+    "amazon web services": "amazon web services",
     "ci/cd": "continuous integration continuous deployment",
+    "cicd": "continuous integration continuous deployment",
+    "continuous integration": "continuous integration continuous deployment",
+    "continuous deployment": "continuous integration continuous deployment",
+    "continuous integration continuous deployment": "continuous integration continuous deployment",
+    "go": "golang",
+    "golang": "golang",
+    "rest": "restful apis",
+    "rest api": "restful apis",
+    "rest apis": "restful apis",
+    "restful api": "restful apis",
+    "restful apis": "restful apis",
+    "power bi": "power bi",
+    "powerbi": "power bi",
+    "vector db": "vector databases",
+    "vector dbs": "vector databases",
+    "vector database": "vector databases",
+    "vector databases": "vector databases",
+    "excel": "microsoft excel",
+    "ms excel": "microsoft excel",
+    "microsoft excel": "microsoft excel",
 }
 
 
@@ -43,22 +91,62 @@ def normalize_skill(skill):
     return skill.lower().strip()
 
 
+def get_skill_variants(skill_str):
+    """
+    Decompose compound skills into individual canonical variants.
+    Handles parentheses like 'SQL (PostgreSQL, MySQL)', slashes 'CI/CD',
+    and alternative phrases 'TensorFlow or PyTorch'.
+    """
+    if not skill_str:
+        return set()
+
+    skill_str = str(skill_str).strip()
+    variants = {normalize_skill(skill_str)}
+
+    # Remove parentheses content: "SQL (PostgreSQL, MySQL)" -> "sql"
+    clean_no_parens = re.sub(r'\(.*?\)', '', skill_str).strip()
+    if clean_no_parens:
+        variants.add(normalize_skill(clean_no_parens))
+
+    # Extract inside parens: "PostgreSQL, MySQL"
+    inside_parens = re.findall(r'\((.*?)\)', skill_str)
+    for group in inside_parens:
+        for part in re.split(r'[,/|]|(?:\bor\b)', group):
+            p = part.strip()
+            if p:
+                variants.add(normalize_skill(p))
+
+    # Split slashes and 'or' (e.g., "Docker / Kubernetes", "TensorFlow or PyTorch")
+    if ' / ' in skill_str or ' or ' in skill_str.lower() or ' | ' in skill_str:
+        for part in re.split(r'\s*/\s*|\s+or\s+|\s*\|\s*', skill_str, flags=re.IGNORECASE):
+            p = part.strip()
+            if p:
+                variants.add(normalize_skill(p))
+
+    return variants
+
+
 def check_exact_or_alias(jd_skill_norm, resume_skill_norm):
-    if jd_skill_norm == resume_skill_norm:
-        return True
-    
-    # Check cleaned alphanumeric equality (e.g. node.js vs nodejs, c++ vs c++)
-    clean_jd = "".join(ch for ch in jd_skill_norm if ch.isalnum())
-    clean_res = "".join(ch for ch in resume_skill_norm if ch.isalnum())
-    if clean_jd and clean_res and clean_jd == clean_res:
-        return True
-    
-    # Check aliases
-    jd_alias = TECH_ALIASES.get(jd_skill_norm, jd_skill_norm)
-    res_alias = TECH_ALIASES.get(resume_skill_norm, resume_skill_norm)
-    if jd_alias == res_alias:
-        return True
-    
+    jd_variants = get_skill_variants(jd_skill_norm)
+    res_variants = get_skill_variants(resume_skill_norm)
+
+    for jd_var in jd_variants:
+        for res_var in res_variants:
+            if jd_var == res_var:
+                return True
+
+            # Check cleaned alphanumeric equality (e.g. node.js vs nodejs, c++ vs c++)
+            clean_jd = "".join(ch for ch in jd_var if ch.isalnum())
+            clean_res = "".join(ch for ch in res_var if ch.isalnum())
+            if clean_jd and clean_res and clean_jd == clean_res:
+                return True
+
+            # Check aliases
+            jd_alias = TECH_ALIASES.get(jd_var, jd_var)
+            res_alias = TECH_ALIASES.get(res_var, res_var)
+            if jd_alias == res_alias:
+                return True
+
     return False
 
 

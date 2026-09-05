@@ -171,12 +171,18 @@ def extract_jd_data(job_description):
     try:
         client = get_groq_client()
 
-        prompt = f"""Extract all technical skills and requirements from this job description.
+        prompt = f"""Analyze this job description or target role and extract all technical requirements and skills.
 
-Analyze the job description carefully and extract:
-1. "required_skills": List ALL explicitly required technical skills, programming languages, frameworks, libraries, databases, cloud platforms, architecture concepts, testing tools, containerization, CI/CD, and methodologies.
-2. "preferred_skills": List nice-to-have or preferred skills.
-3. "experience_required": Required years of experience (e.g. "3 years", "5+ years").
+INSTRUCTIONS:
+1. If the input is a detailed job description:
+   - "required_skills": List all technical skills, programming languages, frameworks, libraries, databases, cloud tools, containerization, and methodologies required.
+   - "preferred_skills": List nice-to-have or preferred skills.
+   - "experience_required": Required years of experience (e.g. "3 years", "5+ years", "Entry-level").
+2. If the input is a job title or target role (e.g. "Full Stack Engineer", "AI Developer", "Data Analyst"):
+   - INFER 8-12 industry-standard required technical skills and tools expected for this role.
+   - INFER 3-5 standard preferred skills for this role.
+   - Estimate typical experience required (e.g. "2+ years").
+3. CRITICAL: List skills as individual, atomic names ONLY (e.g. "Python", "React", "PostgreSQL", "Docker"). Never group skills with slashes or parentheses like "SQL (PostgreSQL, MySQL)" or "TensorFlow or PyTorch".
 
 Return ONLY a raw JSON object with no markdown, no code blocks, no explanation:
 
@@ -186,7 +192,7 @@ Return ONLY a raw JSON object with no markdown, no code blocks, no explanation:
   "experience_required": "3 years"
 }}
 
-Job Description:
+Job Description / Target Role:
 {job_description}"""
 
         response = call_groq_chat(
@@ -194,7 +200,7 @@ Job Description:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a job description parser. Return only raw JSON. No markdown, no code blocks, no explanation."
+                    "content": "You are an expert technical job parser and recruiter. Return only raw JSON. No markdown, no code blocks, no explanation."
                 },
                 {"role": "user", "content": prompt}
             ],
@@ -202,12 +208,22 @@ Job Description:
         )
 
         content = response.choices[0].message.content
-        return parse_json_robustly(content)
+        result = parse_json_robustly(content)
+
+        # If required_skills is still empty, fallback to role inference
+        if not result.get("required_skills"):
+            from .skill_extractor import infer_skills_from_role, extract_skills
+            inferred = infer_skills_from_role(job_description) or extract_skills(job_description)
+            result["required_skills"] = inferred
+
+        return result
     except Exception as e:
         print("=== JD EXTRACT FALLBACK ===", e)
         try:
-            from .skill_extractor import extract_skills
+            from .skill_extractor import extract_skills, infer_skills_from_role
             extracted = extract_skills(job_description)
+            if not extracted:
+                extracted = infer_skills_from_role(job_description)
         except Exception:
             extracted = []
         return {
