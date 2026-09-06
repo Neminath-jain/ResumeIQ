@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
@@ -82,8 +83,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 db_url = os.environ.get('DATABASE_URL')
 
-
-if not db_url or db_url.startswith('sqlite'):
+if not db_url or db_url.strip().startswith('sqlite'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -91,13 +91,26 @@ if not db_url or db_url.startswith('sqlite'):
         }
     }
 else:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=db_url,
-            conn_max_age=600,
-            ssl_require=True,
-        )
-    }
+    # Clean possible accidental quotes, whitespace, or Supabase [password] bracket placeholders
+    cleaned_url = db_url.strip().strip('"').strip("'")
+    cleaned_url = re.sub(r':\[(.*?)\]@', r':\1@', cleaned_url)
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(
+                cleaned_url,
+                conn_max_age=600,
+                ssl_require=True,
+            )
+        }
+    except Exception as e:
+        print(f"Warning: Failed to parse DATABASE_URL ({e}). Falling back to SQLite.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+
 
 AUTHENTICATION_BACKENDS = [
     'resume_analyzer.backends.EmailOrUsernameModelBackend',
